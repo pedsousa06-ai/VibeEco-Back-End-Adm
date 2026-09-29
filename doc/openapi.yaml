@@ -719,6 +719,124 @@ paths:
         '500':
           description: Error Internal Server
 
+# Documentação de recompensas
+  /v1/vibeEco/administrador/recompensas:
+    post:
+      tags:
+        - Recompensas
+      summary: Adiciona uma nova recompensa
+      description: Cadastra uma nova recompensa no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários da recompensa para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Recompensas'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Recompensas
+      summary: Lista todos as recompensas
+      description: Listagem de todos as recompensas cadastrados no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recompensas'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/recompensas/{id}:
+    get:
+      tags:
+        - Recompensas
+      summary: Busca uma recompensa pelo id
+      description: Retorna os dados de uma recompensa cadastrada no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar a recompensa
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recompensas'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Recompensas
+      summary: Atualizar uma recompensa pelo id
+      description: Localiza e atualiza uma recompensa cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar a recompensa
+          required: 
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar a recompensa
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Recompensas'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Recompensas
+      summary: Delete uma recompensa pelo id
+      description: Localiza e exclui uma recompensa cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir a recompensa
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
 # Componentes para serem usados de exemplo
 components:
   schemas:
@@ -895,6 +1013,26 @@ components:
         img: 
           type: string
 
+    # Componente de recompensas
+    Recompensas:
+      required:
+        - nome
+        - descricao
+        - valor
+        - nivel
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: string
+        valor: 
+          type: integer
+        nivel:
+          type: integer
+
   requestBodies:
     Usuarios:
       description: Objeto que deve ser enviado no Body das requisicoes
@@ -944,5 +1082,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Conquistas'
+
+    Recompensas:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Recompensas'
 
     
