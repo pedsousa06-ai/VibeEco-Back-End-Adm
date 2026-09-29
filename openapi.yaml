@@ -1,0 +1,806 @@
+openapi: 3.0.3
+info:
+  title: VibeEco ADM - TechProton
+  description: API centralizada para a gestão completa e o controle de dados do VibeEco ADM
+  termsOfService: http://swagger.io/terms/
+  version: 1.0.26
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://
+paths:
+
+  # Documentação de usuário
+  /v1/vibeEco/administrador/usuarios:
+    post:
+      tags:
+        - Usuários
+      summary: Adiciona um novo usuário
+      description: Cadastra um novo usuário no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários do usuário para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuarios'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Usuários
+      summary: Lista todos os usuários
+      description: Listagem de todos os usuários cadastrados no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuarios'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/usuarios/{id}:
+    get:
+      tags:
+        - Usuários
+      summary: Busca um usuário pelo id
+      description: Retorna os dados de um usuário cadastrado no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar o usuário
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuarios'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Usuários
+      summary: Atualizar um usuário pelo id
+      description: Localiza e atualiza um usuário cadastrado no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar o usuário
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar o usuário
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuarios'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Usuários
+      summary: Delete um usuário pelo id
+      description: Localiza e exclui um usuário cadastrado no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir o usuário
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
+  # Documentação de missões
+  /v1/vibeEco/administrador/missoes:
+    post:
+      tags:
+        - Missões
+      summary: Adiciona uma nova missão
+      description: Cadastra uma nova missão no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários da missão para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Missões'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Missões
+      summary: Lista todos as missões
+      description: Listagem de todas as missões cadastradas no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Missoes'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/missoes/{id}:
+    get:
+      tags:
+        - Missões
+      summary: Busca uma missão pelo id
+      description: Retorna os dados de uma missão cadastrada no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar a missão
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Missoes'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Missões
+      summary: Atualizar uma missão pelo id
+      description: Localiza e atualiza uma missão cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar a missão
+          required: 
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar a missão
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Missoes'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Missões
+      summary: Delete uma missão pelo id
+      description: Localiza e exclui uma missão cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir a missão
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
+  # Documentação de desafios
+  /v1/vibeEco/administrador/desafios:
+    post:
+      tags:
+        - Desafios
+      summary: Adiciona um novo desafio
+      description: Cadastra um novo desafio no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários do desafio para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Desafios'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Desafios
+      summary: Lista todos os desafios
+      description: Listagem de todos os desafios cadastradas no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Desafios'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/desafios/{id}:
+    get:
+      tags:
+        - Desafios
+      summary: Busca um desafio pelo id
+      description: Retorna os dados de um desafio cadastrada no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar o desafio
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Desafios'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Desafios
+      summary: Atualizar um desafio pelo id
+      description: Localiza e atualiza um desafio cadastrado no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar o desafio
+          required: 
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar o desafio
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Desafios'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Desafios
+      summary: Delete um desafio pelo id
+      description: Localiza e exclui um desafio cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir o desafio
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
+# Documentação de conteúdos educativos
+  /v1/vibeEco/administrador/educativos:
+    post:
+      tags:
+        - Educativos
+      summary: Adiciona um novo conteúdo educativo
+      description: Cadastra um novo conteúdo no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários do conteúdo para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Educativos'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Educativos
+      summary: Lista todos os conteúdos educativos
+      description: Listagem de todos os conteúdos cadastrados no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Educativos'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/educativos/{id}:
+    get:
+      tags:
+        - Educativos
+      summary: Busca um conteúdo educativo pelo id
+      description: Retorna os dados de um conteúdo cadastrada no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar o conteúdo
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Educativos'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Educativos
+      summary: Atualizar um conteúdo educativo pelo id
+      description: Localiza e atualiza um conteúdo cadastrado no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar o conteúdo
+          required: 
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar o conteúdo
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Educativos'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Educativos
+      summary: Delete um conteúdo educativo pelo id
+      description: Localiza e exclui um conteúdo cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir o conteúdo
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
+# Documentação de premiações
+  /v1/vibeEco/administrador/premiacao:
+    post:
+      tags:
+        - Premiações
+      summary: Adiciona uma nova premiação
+      description: Cadastra uma nova premiação no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários da premiação para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Premiacao'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Premiações
+      summary: Lista todos as premiações
+      description: Listagem de todos as premiações cadastrados no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Premiacao'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/premiacao/{id}:
+    get:
+      tags:
+        - Premiações
+      summary: Busca uma premiação pelo id
+      description: Retorna os dados de uma premiação cadastrada no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar a premiação
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Premiacao'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Premiações
+      summary: Atualizar uma premiação pelo id
+      description: Localiza e atualiza uma premiação cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar a premiação
+          required: 
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar a premiação
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Premiacao'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Premiações
+      summary: Delete uma premiação pelo id
+      description: Localiza e exclui uma premiação cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir a premiação
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
+# Componentes para serem usados de exemplo
+components:
+  schemas:
+
+    # Componente de usuários
+    Usuarios:
+      required:
+        - nome
+        - email
+        - senha
+        - total_xp
+        - coins
+        - id_escolaridade
+        - id_status
+        - id_instituicao
+        - id_nivel_acesso
+        - id_level
+        - id_ultimo_acesso
+        - id_sexo
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+        senha:
+          type: string
+        total_xp:
+          type: integer
+        coins:
+          type: integer
+        id_escolaridade:
+          type: integer
+        id_status:
+          type: integer
+        id_instituicao:
+          type: array
+          items:
+            type: integer
+          example: [1, 5, 12] # Exemplo visual de como o array será enviado no JSON
+        id_nivel_acesso:
+          type: integer
+        id_level:
+          type: integer
+        id_ultimo_acesso:
+          type: integer
+        id_sexo:
+          type: integer
+
+    # Componente de missões
+    Missoes:
+      required:
+        - nome
+        - descricao
+        - coins
+        - total_xp_missao
+        - data_inicio
+        - data_termino
+        - id_dificuldade
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: string
+        coins:
+          type: integer
+        total_xp_missao:
+          type: integer
+        data_inicio:
+          type: string
+          format: date
+        data_termino:
+          type: string
+          format: date
+        id_dificuldade:
+          type: string
+        
+    # Componente de desafios
+    Desafios:
+      required:
+        - nome
+        - descricao
+        - id_dificuldade
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: string
+        id_dificuldade:
+          type: string
+
+    # Componente de conteúdos educativos
+    Educativos:
+      required:
+        - nome
+        - descricao
+        - id_anexo
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: string
+        id_anexo:
+          type: array
+          itens: 
+            type: integer
+          example: [1,4,7] # Exemplo de como adicionar os anexos
+
+    # Componente de administradores
+    Administrador:
+      required:
+        - nome
+        - email
+        - senha
+        - id_nivel_acesso
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+        senha: 
+          type: string
+        id_nivel_acesso:
+          type: integer
+
+    # Componente de premiacoes
+    Premiacao:
+      required:
+        - nome
+        - descricao
+        - codigo_rastreio
+        - motivo_premiacao
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: string
+        codigo_rastreio: 
+          type: string
+        motivo_premiacao:
+          type: string
+
+  requestBodies:
+    Usuarios:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Usuarios'
+
+    Missoes:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Missoes'
+
+    Desafios:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Desafios'
+  
+    Educativos:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Educativos'
+
+    Administrador:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Administrador'
+
+    Premiacao:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Premiacao'
+
+    
