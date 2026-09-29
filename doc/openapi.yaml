@@ -601,6 +601,124 @@ paths:
         '500':
           description: Error Internal Server
 
+# Documentação de conquistas
+  /v1/vibeEco/administrador/conquistas:
+    post:
+      tags:
+        - Conquistas
+      summary: Adiciona uma nova conquista
+      description: Cadastra uma nova conquista no banco de dados
+      requestBody:
+        description: JSON contendo os dados necessários da conquista para realizar o cadastro
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conquistas'
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '500':
+          description: Error Internal Server
+    get:
+      tags:
+        - Conquistas
+      summary: Lista todos as conquistas
+      description: Listagem de todos as conquistas cadastrados no banco de dados
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conquistas'          
+        '404':
+          description: Not Found
+        '500':
+          description: Error Internal Server
+  /v1/vibeEco/administrador/conquistas/{id}:
+    get:
+      tags:
+        - Conquistas
+      summary: Busca uma conquista pelo id
+      description: Retorna os dados de uma conquista cadastrada no banco usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para retornar a conquista
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conquistas'          
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Not found
+        '500':
+          description: Error Internal Server
+    put:
+      tags:
+        - Conquistas
+      summary: Atualizar uma conquista pelo id
+      description: Localiza e atualiza uma conquista cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para localizar e atualizar a conquista
+          required: 
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Dados para atualizar a conquista
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conquistas'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+    delete:
+      tags:
+        - Conquistas
+      summary: Delete uma conquista pelo id
+      description: Localiza e exclui uma conquista cadastrada no banco de dados usando o id como referência
+      parameters:
+        - name: id
+          in: path
+          description: ID para excluir a conquista
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Pet not found
+        '500':
+          description: Error Internal Server
+
 # Componentes para serem usados de exemplo
 components:
   schemas:
@@ -760,6 +878,23 @@ components:
         motivo_premiacao:
           type: string
 
+    # Componente de conquistas
+    Conquistas:
+      required:
+        - nome
+        - descricao
+        - img
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: string
+        img: 
+          type: string
+
   requestBodies:
     Usuarios:
       description: Objeto que deve ser enviado no Body das requisicoes
@@ -802,5 +937,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Premiacao'
+
+    Conquistas:
+      description: Objeto que deve ser enviado no Body das requisicoes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Conquistas'
 
     
