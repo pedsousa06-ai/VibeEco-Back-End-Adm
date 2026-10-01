@@ -1161,11 +1161,11 @@ components:
           description: Quantidade total de XP concedida ao concluir a missão.
         data_inicio:
           type: string
-          format: date
+          format: date # Define o formato da string como date
           description: Data de início da vigência da missão (AAAA-MM-DD).
         data_termino:
           type: string
-          format: date
+          format: date # Define o formato da string como date
           description: Data limite para a conclusão da missão (AAAA-MM-DD).
         id_dificuldade:
           type: string
