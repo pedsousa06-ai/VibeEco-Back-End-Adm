@@ -54,6 +54,35 @@ paths:
         '500':
           description: Erro interno no servidor.
 
+  /v1/vibeEco/administrador/usuarios/buscarNome:
+    get:
+      tags:
+        - Usuários
+      summary: Buscar usuário por nome
+      description: Retorna uma lista de usuários cujos nomes correspondam (ou contenham) o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome do usuário a ser pesquisado.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuarios'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhum usuário encontrado com o nome informado.
+        '500':
+          description: Erro interno no servidor.
+
   /v1/vibeEco/administrador/usuarios/{id}:
     get:
       tags:
@@ -172,6 +201,35 @@ paths:
                   $ref: '#/components/schemas/Missoes'          
         '404':
           description: Nenhuma missão encontrada.
+        '500':
+          description: Erro interno no servidor.
+
+  /v1/vibeEco/administrador/missoes/buscarNome:
+    get:
+      tags:
+        - Missões
+      summary: Buscar missão por nome
+      description: Retorna uma lista de missões cujos títulos correspondam ou contenham o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome da missão a ser pesquisada.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Missoes'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhuma missão encontrada com o nome informado.
         '500':
           description: Erro interno no servidor.
 
@@ -296,6 +354,35 @@ paths:
         '500':
           description: Erro interno no servidor.
 
+  /v1/vibeEco/administrador/desafios/buscarNome:
+    get:
+      tags:
+        - Desafios
+      summary: Buscar desafio por nome
+      description: Retorna uma lista de desafios cujos títulos correspondam ou contenham o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome do desafio a ser pesquisado.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Desafios'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhum desafio encontrado com o nome informado.
+        '500':
+          description: Erro interno no servidor.
+
   /v1/vibeEco/administrador/desafios/{id}:
     get:
       tags:
@@ -414,6 +501,35 @@ paths:
                   $ref: '#/components/schemas/Educativos'          
         '404':
           description: Nenhum conteúdo encontrado.
+        '500':
+          description: Erro interno no servidor.
+
+  /v1/vibeEco/administrador/educativos/buscarNome:
+    get:
+      tags:
+        - Educativos
+      summary: Buscar conteúdo educativo por nome
+      description: Retorna uma lista de conteúdos educativos cujos títulos correspondam ou contenham o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome do conteúdo educativo a ser pesquisado.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Educativos'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhum conteúdo educativo encontrado com o nome informado.
         '500':
           description: Erro interno no servidor.
 
@@ -538,6 +654,35 @@ paths:
         '500':
           description: Erro interno no servidor.
 
+  /v1/vibeEco/administrador/premiacao/buscarNome:
+    get:
+      tags:
+        - Premiações
+      summary: Buscar premiação por nome
+      description: Retorna uma lista de premiações cujos títulos correspondam ou contenham o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome da premiação a ser pesquisada.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Premiacao'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhuma premiação encontrada com o nome informado.
+        '500':
+          description: Erro interno no servidor.
+
   /v1/vibeEco/administrador/premiacao/{id}:
     get:
       tags:
@@ -659,6 +804,35 @@ paths:
         '500':
           description: Erro interno no servidor.
 
+  /v1/vibeEco/administrador/conquistas/buscarNome:
+    get:
+      tags:
+        - Conquistas
+      summary: Buscar conquista por nome
+      description: Retorna uma lista de conquistas cujos títulos correspondam ou contenham o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome da conquista a ser pesquisada.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conquistas'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhuma conquista encontrada com o nome informado.
+        '500':
+          description: Erro interno no servidor.
+
   /v1/vibeEco/administrador/conquistas/{id}:
     get:
       tags:
@@ -777,6 +951,35 @@ paths:
                   $ref: '#/components/schemas/Recompensas'          
         '404':
           description: Nenhuma recompensa encontrada.
+        '500':
+          description: Erro interno no servidor.
+
+  /v1/vibeEco/administrador/recompensas/buscarNome:
+    get:
+      tags:
+        - Recompensas
+      summary: Buscar recompensa por nome
+      description: Retorna uma lista de recompensas cujos títulos correspondam ou contenham o termo de busca fornecido.
+      parameters:
+        - name: nome
+          in: query
+          description: Nome ou parte do nome da recompensa a ser pesquisada.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operação realizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recompensas'         
+        '400':
+          description: Parâmetro de nome inválido ou ausente.
+        '404':
+          description: Nenhuma recompensa encontrada com o nome informado.
         '500':
           description: Erro interno no servidor.
 
