@@ -26,3 +26,8 @@ const corsOption = {
 //configurando as permissões da API atravez do CORS
 app.use(cors(corsOption))
 
+
+//iniciando uma API para receber requisições
+app.listen(8080, function(){ //decidindo a porta para saída do conteúdo
+    console.log("API funcionando e aguardando requisições...") //vai mostrar no terminal que a API já está funcionando
+})
