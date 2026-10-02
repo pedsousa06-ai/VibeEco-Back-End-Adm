@@ -82,9 +82,9 @@ Autenticação Admin → Controle de acesso → Usuários → Missões → Desaf
 - Indicadores e resultados;
 - Relatórios.
 
-  ---
+---
 
-  ## 🔌 Endpoints
+## 🔌 Endpoints
 
 <!-- TODO: documentar os endpoints reais (método, rota, descrição, autenticação) -->
 
