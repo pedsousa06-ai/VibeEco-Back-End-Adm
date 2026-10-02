@@ -82,6 +82,19 @@ Autenticação Admin → Controle de acesso → Usuários → Missões → Desaf
 - Indicadores e resultados;
 - Relatórios.
 
+  ---
+
+  ## 🔌 Endpoints
+
+<!-- TODO: documentar os endpoints reais (método, rota, descrição, autenticação) -->
+
+| Módulo | Método | Rota | Descrição |
+|--------|--------|------|-----------|
+| Autenticação | `POST` | `/auth/login` | Login do usuário *(exemplo — ajustar)* |
+| ... | ... | ... | ... |
+
+---
+
 ## ⚙️ Como executar
 
 <!-- TODO: informar linguagem/framework, versões e comandos reais -->
