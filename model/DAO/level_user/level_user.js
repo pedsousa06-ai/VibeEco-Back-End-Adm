@@ -24,7 +24,7 @@ const insertLevelUsuario = async function(levelUsuario){
         //criando variável sql
         let sql = 
             `
-                insert into tbl_level_usuario (
+                insert into tbl_level_user (
                     nome,
                     numero_level,
                     xp_necessario
@@ -60,7 +60,7 @@ const updateLevelUsuario = async function(levelUsuario){
         //criando variável sql
         let sql = 
         `
-            update tbl_level_usuario set 
+            update tbl_level_user set 
                 nome 			= "${levelUsuario.nome}",
                 numero_level	= "${levelUsuario.numero_level}",
                 xp_necessario   = "${levelUsuario.xp_necessario}"
@@ -88,7 +88,7 @@ const selectAllLevelUsuario = async function(){
     try {
         
         //criando variável sql
-        let sql = `select * from tbl_level_usuario order by id desc;`
+        let sql = `select * from tbl_level_user order by id desc;`
 
         //enviando para o banco de dados
         let result = await knexConex.raw(sql)
@@ -101,6 +101,7 @@ const selectAllLevelUsuario = async function(){
             return false
         }
     } catch (error) {
+        console.log(error)
         return false
     }
 }
@@ -110,7 +111,7 @@ const selectByIdLevelUsuario = async function(id){
 
     try {
         
-        let sql = `select * from tbl_level_usuario where id = ${id}`
+        let sql = `select * from tbl_level_user where id = ${id}`
 
         let result = await knexConex.raw(sql)
 
@@ -129,7 +130,7 @@ const deleteLevelUsuario = async function(id){
 
     try {
         
-        let sql = `delete from tbl_level_usuario where id = ${id}`
+        let sql = `delete from tbl_level_user where id = ${id}`
 
         let result = await knexConex.raw(sql)
 

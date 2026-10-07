@@ -24,7 +24,7 @@ router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requi
     let contentType = request.headers["content-type"]
 
     //enviando para a controller
-    let result = await controllerLevelUsuario.inserirNovoLevelUsuario(dados, contentType)
+    let result = await controllerLevelUsuario.inserirNovoLevelUsuario(contentType, dados)
 
     //enviando resposta da requisição
     response.status(result.status_code)
@@ -65,7 +65,7 @@ router.put("/:id", bodyParserJSON, async function(request, response){
     let contentType = request.headers['content-type']
 
     //enviando os dados para controller
-    let result = await controllerLevelUsuario.atualizarLevelUsuario(dados, contentType, id)
+    let result = await controllerLevelUsuario.atualizarLevelUsuario(id, contentType, dados)
 
     //enviando para o usuário
     response.status(result.status_code)
