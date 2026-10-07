@@ -1,5 +1,5 @@
 /********************************************************************************************************************************************************************************************
- * Objetivo: Arquivo responsável pela validação, tratamento e manipulação de dados para o CRUD de level do usuário.
+ * Objetivo: Arquivo responsável pela validação, tratamento e manipulação de dados para o CRUD de escolaridade.
  * Data: 07/10/2026
  * Autor: Lucas Dias Brnadão Kolle
  * Versão: 1.0.10.26
@@ -9,14 +9,14 @@
 const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL)
-const levelUsuarioDAO = require("../../model/DAO/level_user/level_user.js")
+const escolaridadeDAO = require("../../model/DAO/escolaridade/escolaridade.js")
 const { json } = require("body-parser")
 const express = require("express")
 
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
-const inserirNovoLevelUsuario = async function(contentType, levelUsuario){
+const inserirNovaEscolaridade = async function(contentType, escolaridade){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -26,21 +26,21 @@ const inserirNovoLevelUsuario = async function(contentType, levelUsuario){
         if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
 
             //validando dados recebidos
-            let validando = await validarDadosLevelUsuario(levelUsuario)
+            let validando = await validarDadosEscolaridade(escolaridade)
 
             if(!validando){
 
                 //mandando pro banco 
-                let result = await levelUsuarioDAO.insertLevelUsuario(levelUsuario)
+                let result = await escolaridadeDAO.insertEscolaridade(escolaridade)
 
                 if(result){
 
-                    levelUsuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+                    escolaridade.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
                     message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
                     message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
-                    message.DEFAULT_MESSAGE.response = levelUsuario //aparece os dados do ator do response para o usuário conferir
+                    message.DEFAULT_MESSAGE.response = escolaridade //aparece os dados do ator do response para o usuário conferir
 
                     return message.DEFAULT_MESSAGE //200 (retorna o cabeçalho com a mensagem de sucesso e os dados)
                 }else{
@@ -55,19 +55,20 @@ const inserirNovoLevelUsuario = async function(contentType, levelUsuario){
         }
         
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
     }
 
 }
 
 //função para atualizar um dado
-const atualizarLevelUsuario = async function(id, contentType, levelUsuario){
+const atualizarEscolaridade = async function(id, contentType, escolaridade){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
         //verificando existencia do id
-        let validarId = await buscarLevelUsuarioId(id)
+        let validarId = await buscarEscolaridadeId(id)
 
         if(validarId.status){
 
@@ -75,22 +76,22 @@ const atualizarLevelUsuario = async function(id, contentType, levelUsuario){
             if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
 
                 //validar dados
-                let validarDados = await validarDadosLevelUsuario(levelUsuario)
+                let validarDados = await validarDadosEscolaridade(escolaridade)
 
                 if(!validarDados){
 
                     //se estiver tudo certo ele adiciona o id no objeto
-                    levelUsuario.id = Number(id)
+                    escolaridade.id = Number(id)
     
                     //enviando para o banco 
-                    let result = await levelUsuarioDAO.updateLevelUsuario(levelUsuario)
+                    let result = await escolaridadeDAO.updateEscolaridade(escolaridade)
 
                     if(result){
 
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
-                        message.DEFAULT_MESSAGE.response = levelUsuario //envia os dados no response, para o usuário visualizar
+                        message.DEFAULT_MESSAGE.response = escolaridade //envia os dados no response, para o usuário visualizar
 
                         return message.DEFAULT_MESSAGE //200
                     }else{
@@ -115,13 +116,13 @@ const atualizarLevelUsuario = async function(id, contentType, levelUsuario){
 }
 
 //função para retornar todos os dados
-const listarLevelUsuario = async function(){
+const listarEscolaridade = async function(){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
         
-        let result = await levelUsuarioDAO.selectAllLevelUsuario()
+        let result = await escolaridadeDAO.selectAllEscolaridade()
 
         if(result){
 
@@ -131,7 +132,7 @@ const listarLevelUsuario = async function(){
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                 message.DEFAULT_MESSAGE.response.count = result.length
-                message.DEFAULT_MESSAGE.response.levelUsuario = result
+                message.DEFAULT_MESSAGE.response.escolaridade = result
 
                 return message.DEFAULT_MESSAGE //retorna o cabeçalho com o "result" que contém os dados
 
@@ -147,7 +148,7 @@ const listarLevelUsuario = async function(){
 }
 
 //função para bucar um dado pelo id
-const buscarLevelUsuarioId = async function(id){
+const buscarEscolaridadeId = async function(id){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -163,7 +164,7 @@ const buscarLevelUsuarioId = async function(id){
         }else{
             
             //enviando para o banco
-            let result = await levelUsuarioDAO.selectByIdLevelUsuario(id)
+            let result = await escolaridadeDAO.selectByIdEscolaridade(id)
 
             //tratando retorno
             if(result){
@@ -174,7 +175,7 @@ const buscarLevelUsuarioId = async function(id){
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
-                    message.DEFAULT_MESSAGE.response.levelUsuario = result
+                    message.DEFAULT_MESSAGE.response.escolaridade = result
 
                     return message.DEFAULT_MESSAGE //200                 
                 }else{
@@ -191,19 +192,19 @@ const buscarLevelUsuarioId = async function(id){
 }
 
 //função para excluir um dado
-const excluirLevelUsuario = async function(id){
+const excluirEscolaridade = async function(id){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
         
         //validando id
-        let validarId = await buscarLevelUsuarioId(id)
+        let validarId = await buscarEscolaridadeId(id)
 
         if(validarId.status){
 
             //mandadno para o banco
-            let result = await levelUsuarioDAO.deleteLevelUsuario(id)
+            let result = await escolaridadeDAO.deleteEscolaridade(id)
 
             if(result){
 
@@ -222,25 +223,15 @@ const excluirLevelUsuario = async function(id){
 }
 
 //função para validar os dados recebidos na requição
-const validarDadosLevelUsuario = async function(dados){
+const validarDadosEscolaridade = async function(dados){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
         // se o "dados.nome" (conteúdo do Json) vier vazio ou "null" ou undefined ou com mais caracteres do que é permitido (.lenght -> conta a quantidade de caracteres)
-        if(dados.nome == undefined || dados.nome == "" || dados.nome == null || dados.nome.length > 40){
+        if(dados.nome == undefined || dados.nome == "" || dados.nome == null || dados.nome.length > 50){
 
             //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
             message.ERROR_BAD_REQUEST.field = "[NOME] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else if(dados.numero_level == undefined || dados.numero_level == "" || dados.numero_level == null || dados.numero_level < 0){ 
-    
-            message.ERROR_BAD_REQUEST.field = "[NUMERO_LEVEL] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else if(dados.xp_necessario == undefined || dados.xp_necessario == "" || dados.xp_necessario == null || dados.xp_necessario < 0){
-    
-            message.ERROR_BAD_REQUEST.field = "[DATA DE NASCIMENTO] INVALIDA"
             return message.ERROR_BAD_REQUEST
     
         }else{
@@ -251,9 +242,9 @@ const validarDadosLevelUsuario = async function(dados){
 
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
-    inserirNovoLevelUsuario,
-    atualizarLevelUsuario,
-    listarLevelUsuario,
-    buscarLevelUsuarioId,
-    excluirLevelUsuario
+    inserirNovaEscolaridade,
+    atualizarEscolaridade,
+    listarEscolaridade,
+    buscarEscolaridadeId,
+    excluirEscolaridade
 }
