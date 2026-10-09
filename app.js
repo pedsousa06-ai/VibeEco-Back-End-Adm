@@ -78,6 +78,16 @@ app.use("/v1/vibeEco/administrador/premiacao", cors(), premiacaoRouter) //quando
 
 
 
+/* SESSÃO DE MISSAO */
+
+//importando o arquivo onde estão as rotas da tabela
+const missaoRouter = require("./routes/missao.routes.js")
+
+//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
+app.use("/v1/vibeEco/administrador/missao", cors(), missaoRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+
+
+
 //iniciando uma API para receber requisições
 app.listen(8080, function(){ //decidindo a porta para saída do conteúdo
     console.log("API funcionando e aguardando requisições...") //vai mostrar no terminal que a API já está funcionando
