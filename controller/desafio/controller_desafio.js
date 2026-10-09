@@ -1,5 +1,5 @@
 /********************************************************************************************************************************************************************************************
- * Objetivo: Arquivo responsável pela validação, tratamento e manipulação de dados para o CRUD de missao.
+ * Objetivo: Arquivo responsável pela validação, tratamento e manipulação de dados para o CRUD de desafio.
  * Data: 09/10/2026
  * Autor: Lucas Dias Brnadão Kolle
  * Versão: 1.0.10.26
@@ -9,14 +9,14 @@
 const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL)
-const missaoDAO = require("../../model/DAO/missao/missao.js")
+const desafioDAO = require("../../model/DAO/desafio/desafio.js")
 const { json } = require("body-parser")
 const express = require("express")
 
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
-const inserirNovaMissao = async function(contentType, missao){
+const inserirNovaDesafio = async function(contentType, desafio){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -26,21 +26,21 @@ const inserirNovaMissao = async function(contentType, missao){
         if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
 
             //validando dados recebidos
-            let validando = await validarDadosMissao(missao)
+            let validando = await validarDadosDesafio(desafio)
 
             if(!validando){
 
                 //mandando pro banco 
-                let result = await missaoDAO.insertMissao(missao)
+                let result = await desafioDAO.insertDesafio(desafio)
 
                 if(result){
 
-                    missao.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+                    desafio.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
                     message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
                     message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
-                    message.DEFAULT_MESSAGE.response = missao //aparece os dados do ator do response para o usuário conferir
+                    message.DEFAULT_MESSAGE.response = desafio //aparece os dados do ator do response para o usuário conferir
 
                     return message.DEFAULT_MESSAGE //200 (retorna o cabeçalho com a mensagem de sucesso e os dados)
                 }else{
@@ -62,13 +62,13 @@ const inserirNovaMissao = async function(contentType, missao){
 }
 
 //função para atualizar um dado
-const atualizarMissao = async function(id, contentType, missao){
+const atualizarDesafio = async function(id, contentType, desafio){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
         //verificando existencia do id
-        let validarId = await buscarMissaoId(id)
+        let validarId = await buscarDesafioId(id)
 
         if(validarId.status){
 
@@ -76,7 +76,7 @@ const atualizarMissao = async function(id, contentType, missao){
             if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
 
                 //validar dados
-                let validarDados = await validarDadosMissao(missao)
+                let validarDados = await validarDadosDesafio(desafio)
 
                 if(!validarDados){
 
@@ -84,14 +84,14 @@ const atualizarMissao = async function(id, contentType, missao){
                     missao.id = Number(id)
     
                     //enviando para o banco 
-                    let result = await missaoDAO.updateMissao(missao)
+                    let result = await desafioDAO.updateDesafio(desafio)
 
                     if(result){
 
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
-                        message.DEFAULT_MESSAGE.response = missao //envia os dados no response, para o usuário visualizar
+                        message.DEFAULT_MESSAGE.response = desafio //envia os dados no response, para o usuário visualizar
 
                         return message.DEFAULT_MESSAGE //200
                     }else{
@@ -116,13 +116,13 @@ const atualizarMissao = async function(id, contentType, missao){
 }
 
 //função para retornar todos os dados
-const listarMissao = async function(){
+const listarDesafio = async function(){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
         
-        let result = await missaoDAO.selectAllMissao()
+        let result = await desafioDAO.selectAllDesafio()
 
         if(result){
 
@@ -132,7 +132,7 @@ const listarMissao = async function(){
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                 message.DEFAULT_MESSAGE.response.count = result.length
-                message.DEFAULT_MESSAGE.response.missao = result
+                message.DEFAULT_MESSAGE.response.desafio = result
 
                 return message.DEFAULT_MESSAGE //retorna o cabeçalho com o "result" que contém os dados
 
@@ -148,7 +148,7 @@ const listarMissao = async function(){
 }
 
 //função para bucar um dado pelo id
-const buscarMissaoId = async function(id){
+const buscarDesafioId = async function(id){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -164,7 +164,7 @@ const buscarMissaoId = async function(id){
         }else{
             
             //enviando para o banco
-            let result = await missaoDAO.selectByIdMissao(id)
+            let result = await desafioDAO.selectByIdDesafio(id)
 
             //tratando retorno
             if(result){
@@ -175,7 +175,7 @@ const buscarMissaoId = async function(id){
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
-                    message.DEFAULT_MESSAGE.response.missao = result
+                    message.DEFAULT_MESSAGE.response.desafio = result
 
                     return message.DEFAULT_MESSAGE //200                 
                 }else{
@@ -192,19 +192,19 @@ const buscarMissaoId = async function(id){
 }
 
 //função para excluir um dado
-const excluirMissao = async function(id){
+const excluirDesafio = async function(id){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
         
         //validando id
-        let validarId = await buscarMissaoId(id)
+        let validarId = await buscarDesafioId(id)
 
         if(validarId.status){
 
             //mandadno para o banco
-            let result = await missaoDAO.deleteMissao(id)
+            let result = await desafioDAO.deleteDesafio(id)
 
             if(result){
 
@@ -223,7 +223,7 @@ const excluirMissao = async function(id){
 }
 
 //função para validar os dados recebidos na requição
-const validarDadosMissao = async function(dados){
+const validarDadosDesafio = async function(dados){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -234,7 +234,7 @@ const validarDadosMissao = async function(dados){
             message.ERROR_BAD_REQUEST.field = "[NOME] INVALIDO"
             return message.ERROR_BAD_REQUEST
     
-        }else if(dados.coins == undefined || dados.coins == "" || dados.coins == null || isNaN(dados.coins)){
+        }else if(dados.super_coins == undefined || dados.super_coins == "" || dados.super_coins == null || isNaN(dados.super_coins)){
 
             //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
             message.ERROR_BAD_REQUEST.field = "[COINS] INVALIDO"
@@ -266,9 +266,9 @@ const validarDadosMissao = async function(dados){
 
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
-    inserirNovaMissao,
-    atualizarMissao,
-    listarMissao,
-    buscarMissaoId,
-    excluirMissao
+    inserirNovaDesafio,
+    atualizarDesafio,
+    listarDesafio,
+    buscarDesafioId,
+    excluirDesafio
 }
