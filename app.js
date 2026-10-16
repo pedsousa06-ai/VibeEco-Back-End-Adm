@@ -10,6 +10,17 @@ const express       = require("express")
 const cors          = require("cors")
 const bodyParser    = require("body-parser")
 
+// Sessão de manipulação e criação de instacias para upload de imagem 
+const multer        = require("multer") // multer é uma biblioteca que permite o upload de arquivos para a API, como imagens, vídeos, áudios, etc.
+
+const storage       = multer.diskStorage({ //criando um objeto para manipular o multer
+    destination: function(req, file, cb){ //definindo o destino do arquivo
+        cb(null, "uploads") //definindo o destino do arquivo
+    }
+})
+
+const upload = multer() // criando um objeto para manipular o multer
+
 //criando um objeto para manipular dados do body da API em formato Json
 const bodyParserJSON = bodyParser.json()
 
