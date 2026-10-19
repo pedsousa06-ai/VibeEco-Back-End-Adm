@@ -81,7 +81,7 @@ const atualizarDesafio = async function(id, contentType, desafio){
                 if(!validarDados){
 
                     //se estiver tudo certo ele adiciona o id no objeto
-                    missao.id = Number(id)
+                    desafio.id = Number(id)
     
                     //enviando para o banco 
                     let result = await desafioDAO.updateDesafio(desafio)
@@ -238,12 +238,6 @@ const validarDadosDesafio = async function(dados){
 
             //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
             message.ERROR_BAD_REQUEST.field = "[COINS] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else if(dados.total_xp_missao == undefined || dados.total_xp_missao == "" || dados.total_xp_missao == null || isNaN(dados.total_xp_missao)){
-
-            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
-            message.ERROR_BAD_REQUEST.field = "[TOTAL_XP_MISSAO] INVALIDO"
             return message.ERROR_BAD_REQUEST
     
         }else if(dados.data_inicio == undefined || dados.data_inicio == "" || dados.data_inicio == null || dados.data_inicio.length != 10){
