@@ -13,41 +13,58 @@ const usuarioDAO = require("../../model/DAO/usuario/usuario.js")
 const { json } = require("body-parser")
 const express = require("express")
 
+// import da controller que faz upload da foto
+const UPLOAD = require("../upload/controller_upload_azure.js")
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
-const inserirNovaUsuario = async function(contentType, usuario){
+const inserirNovaUsuario = async function(contentType, usuario, foto){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
 
         //validando content type
-        if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
+        if(contentType){
 
             //validando dados recebidos
             let validando = await validarDadosUsuario(usuario)
 
-            if(!validando){
+            // Enviando a foto para fazer o upload do arquivo
+            let urlFoto = await UPLOAD.uploadFiles(foto)
 
-                //mandando pro banco 
-                let result = await usuarioDAO.insertUsuario(usuario)
+            // validando se a foto foi enviada corretamente
+            if(urlFoto){
 
-                if(result){
+                // Adicionando a url no objeto usuario
+                usuario.foto = urlFoto
+                
+                if(!validando){
 
-                    usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+                    //mandando pro banco 
+                    let result = await usuarioDAO.insertUsuario(usuario)
+    
+                    if(result){
+    
+                        usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+    
+                        message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
+                        message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
+                        message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
+                        message.DEFAULT_MESSAGE.response = usuario //aparece os dados do ator do response para o usuário conferir
+    
+                        return message.DEFAULT_MESSAGE //200 (retorna o cabeçalho com a mensagem de sucesso e os dados)
+                    }else{
+                        return message.ERROR_INTERNAL_SERVER_MODEL
+                    }
 
-                    message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
-                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
-                    message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
-                    message.DEFAULT_MESSAGE.response = usuario //aparece os dados do ator do response para o usuário conferir
-
-                    return message.DEFAULT_MESSAGE //200 (retorna o cabeçalho com a mensagem de sucesso e os dados)
                 }else{
-                    return message.ERROR_INTERNAL_SERVER_MODEL
+                    return validando
                 }
+
             }else{
-                return validando
+                return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (erro no controller)
             }
 
         }else{

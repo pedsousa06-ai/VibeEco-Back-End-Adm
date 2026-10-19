@@ -11,11 +11,22 @@ const router = express.Router()
 //importando o arquivo da controller, para pode enviar os dados para serem processados
 const controllerUsuario = require("../controller/usuario/controller_usuario.js")
 
+// Sessão de manipulação e criação de instacias para upload de imagem 
+const multer        = require("multer") // multer é uma biblioteca que permite o upload de arquivos para a API, como imagens, vídeos, áudios, etc.
+
+const storage       = multer.diskStorage({ //criando um objeto para manipular o multer
+    destination: function(req, file, cb){ //definindo o destino do arquivo
+        cb(null, "uploads") //definindo o destino do arquivo
+    }
+})
+
+const upload = multer() // criando um objeto para manipular o multer
+
 
 /* CRUD DA TABELA */
 
 //cadastrar novo dado
-router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, async function(request, response){
+router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, upload.single("foto"), async function(request, response){
     
     //recebendo dados da requisição
     let dados = request.body
@@ -23,8 +34,10 @@ router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requi
     //verificando content-type
     let contentType = request.headers["content-type"]
 
+    let foto = request.file //recebendo a foto enviada na requisição
+
     //enviando para a controller
-    let result = await controllerUsuario.inserirNovaUsuario(contentType, dados)
+    let result = await controllerUsuario.inserirNovaUsuario(contentType, dados, foto)
 
     //enviando resposta da requisição
     response.status(result.status_code)

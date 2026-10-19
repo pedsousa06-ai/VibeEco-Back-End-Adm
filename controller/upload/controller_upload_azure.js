@@ -2,7 +2,7 @@
 const AZURE = require('../modulo/config_upload_azure'); 
 
 // importando o fetch para fazer requisições HTTP
-const fetch = require('node-fetch').default; 
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 // função para fazer o upload de arquivos para o Azure
 const uploadFiles = async function(files){ 
