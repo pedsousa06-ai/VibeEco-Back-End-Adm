@@ -79,7 +79,7 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 }
 
 //função para atualizar um dado
-const atualizarUsuario= async function(id, contentType, usuario){
+const atualizarUsuario= async function(id, contentType, usuario, foto){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -90,29 +90,43 @@ const atualizarUsuario= async function(id, contentType, usuario){
         if(validarId.status){
 
             //verificando tipo de dados
-            if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
+            if(contentType){
 
                 //validar dados
                 let validarDados = await validarDadosUsuario(usuario)
 
                 if(!validarDados){
 
-                    //se estiver tudo certo ele adiciona o id no objeto
-                    usuario.id = Number(id)
-    
-                    //enviando para o banco 
-                    let result = await usuarioDAO.updateUsuario(usuario)
+                    // Enviando a foto para fazer o upload do arquivo
+                    let urlFoto = await UPLOAD.uploadFiles(foto)
 
-                    if(result){
+                    if(urlFoto){
 
-                        message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
-                        message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
-                        message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
-                        message.DEFAULT_MESSAGE.response = usuario //envia os dados no response, para o usuário visualizar
+                        // Adicionando a url no objeto usuario
+                        usuario.foto = urlFoto
 
-                        return message.DEFAULT_MESSAGE //200
+                        //se estiver tudo certo ele adiciona o id no objeto
+                        usuario.id = Number(id)
+        
+                        //enviando para o banco 
+                        let result = await usuarioDAO.updateUsuario(usuario)
+
+                        if(result){
+
+                            message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
+                            message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
+                            message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
+                            message.DEFAULT_MESSAGE.response = usuario //envia os dados no response, para o usuário visualizar
+
+                            return message.DEFAULT_MESSAGE //200
+                        }else{
+                            return message.ERROR_INTERNAL_SERVER_MODEL
+                        }
+
+
                     }else{
-                        return message.ERROR_INTERNAL_SERVER_MODEL
+                        console.log("Erro ao enviar a foto")
+                        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (erro no controller)
                     }
     
                 }else{
@@ -127,6 +141,7 @@ const atualizarUsuario= async function(id, contentType, usuario){
         }
         
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 

@@ -70,15 +70,17 @@ router.get("/:id", async function(request, response){
 })
 
 //atualizar dado
-router.put("/:id", bodyParserJSON, async function(request, response){
+router.put("/:id", bodyParserJSON, upload.single("foto"), async function(request, response){
 
     //recebendo o id e o conteúdo para serem enviados
     let id = request.params.id
     let dados = request.body
     let contentType = request.headers['content-type']
 
+    let foto = request.file //recebendo a foto enviada na requisição
+
     //enviando os dados para controller
-    let result = await controllerUsuario.atualizarUsuario(id, contentType, dados)
+    let result = await controllerUsuario.atualizarUsuario(id, contentType, dados, foto)
 
     //enviando para o usuário
     response.status(result.status_code)
