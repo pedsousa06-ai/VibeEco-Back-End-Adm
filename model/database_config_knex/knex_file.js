@@ -5,7 +5,7 @@ module.exports = {
       connection: {
         host: 'localhost', //onde está instalado o banco de dados (pode ser o IP)
         user: 'root', // Substitua pelo seu usuário
-        password: '12345678', // Substitua pela sua senha
+        password: 'bcd127', // Substitua pela sua senha
         database: 'db_vibeEco_2026', //nome do database
         port: 3306, // Porta padrão do MySQL
        
