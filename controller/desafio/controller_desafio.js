@@ -8,8 +8,9 @@
 //importando arquivo de mensagens
 const config_message = require("../modulo/configMessages.js")
 
-//importando arquivo do DAO (MODEL)
+//importando arquivo do DAO (MODEL) e da controller da tabela intermediaria
 const desafioDAO = require("../../model/DAO/desafio/desafio.js")
+const controlerDesafioCategoria = require("./controller_desafio_categoria.js")
 const { json } = require("body-parser")
 const express = require("express")
 
@@ -36,6 +37,27 @@ const inserirNovaDesafio = async function(contentType, desafio){
                 if(result){
 
                     desafio.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+
+
+                    //Manipulação de dados para inserir na tabela intermediaria
+                    for(categoria of desafio.categoria){ //estrutura para percorrer o array recebido na requisição no json
+
+                       
+                        //cria um json com os ids, para mandar os dois juntos
+                        let desafioCategoria = {
+                            "id_desafio": desafio.id,
+                            "id_categoria": categoria.id
+                        }
+
+                        //enviando os ids para a controller da tabela intermediaria
+                        let resultInsertDesafioCategoria = await controlerDesafioCategoria.inserirNovoDesafioCategoria(desafioCategoria)
+
+
+                        if(!resultInsertDesafioCategoria.status){
+                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                        }
+
+                    }
 
                     message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
