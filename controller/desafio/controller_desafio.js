@@ -110,6 +110,31 @@ const atualizarDesafio = async function(id, contentType, desafio){
 
                     if(result){
 
+                        //Manipulação de dados na tabela de relação (tabela intermediária)
+                        let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirDesafioCategoria(desafio.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                        //após a exlusão de todos os dados relacionados
+                        if(resultDeleteDesafioCategoria.status){
+
+                            //Manipulação de dados para inserir os Generos do Filme
+                            for(categoria of desafio.categoria){ //estrutura para percorrer o array recebido na requisição no json 
+                       
+                                //cria um json com os ids para mandar os dois juntos
+                                let desafioCategoria = {
+                                    "id_desafio": desafio.id,
+                                    "id_categoria": categoria.id
+                                }
+                                
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertDesafioCategoria = await controlerDesafioCategoria.inserirNovoDesafioCategoria(desafioCategoria)
+
+                                if(!resultInsertDesafioCategoria.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                }
+                            }
+                        }
+
+
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
