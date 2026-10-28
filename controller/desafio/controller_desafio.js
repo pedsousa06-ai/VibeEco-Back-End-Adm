@@ -175,6 +175,20 @@ const listarDesafio = async function(){
 
             if(result.length > 0){
 
+                //percorrendo o array
+                for(desafio of result){
+
+                    //cria o objeto relacionados 
+                    let resultDesafioCategoria = await controlerDesafioCategoria.buscarDesafioCategoriaID(desafio.id) //enviando o id  para a função que busca os dados relacionados a ele
+                    
+                    /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
+                    //console.log(resultGenero)
+
+                    if(resultDesafioCategoria.status){ //se o status for verdadeiro, ele continua o processo
+                        desafio.categoria = resultDesafioCategoria.response.desafioCategoria //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+                }
+
                 //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
