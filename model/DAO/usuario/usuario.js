@@ -117,7 +117,24 @@ const selectAllUsuario = async function(){
     try {
         
         //criando variável sql
-        let sql = `select * from tbl_usuario order by id desc;`
+        let sql = `select	tbl_usuario.id, tbl_usuario.nome, tbl_usuario.email, tbl_usuario.foto, tbl_usuario.total_xp, tbl_usuario.coins, tbl_usuario.data_ultimo_acesso,
+                            tbl_escolaridade.nome as escolaridade,
+                            tbl_status.is_active as status_usuario,
+                            tbl_instituicao.nome as instituicao,
+                            tbl_nivel_acesso.nivel as nivel_acesso,
+                            tbl_level_user.nome as level
+                                from tbl_usuario
+                                    inner join tbl_escolaridade
+                                        on tbl_usuario.id_escolaridade = tbl_escolaridade.id
+                                    inner join tbl_status
+                                        on tbl_usuario.id_status = tbl_status.id
+                                    inner join tbl_instituicao
+                                        on tbl_usuario.id_instituicao = tbl_instituicao.id
+                                    inner join tbl_nivel_acesso
+                                        on tbl_usuario.id_nivel_acesso = tbl_nivel_acesso.id				
+                                    inner join tbl_level_user
+                                        on tbl_usuario.id_level = tbl_level_user.id		
+                        order by tbl_usuario.id desc;`
 
         //enviando para o banco de dados
         let result = await knexConex.raw(sql)
@@ -140,7 +157,24 @@ const selectByIdUsuario = async function(id){
 
     try {
         
-        let sql = `select * from tbl_usuario where id = ${id}`
+        let sql = `select	tbl_usuario.id, tbl_usuario.nome, tbl_usuario.email, tbl_usuario.foto, tbl_usuario.total_xp, tbl_usuario.coins, tbl_usuario.data_ultimo_acesso,
+                            tbl_escolaridade.nome as escolaridade,
+                            tbl_status.is_active as status_usuario,
+                            tbl_instituicao.nome as instituicao,
+                            tbl_nivel_acesso.nivel as nivel_acesso,
+                            tbl_level_user.nome as level
+                                from tbl_usuario
+                                    inner join tbl_escolaridade
+                                        on tbl_usuario.id_escolaridade = tbl_escolaridade.id
+                                    inner join tbl_status
+                                        on tbl_usuario.id_status = tbl_status.id
+                                    inner join tbl_instituicao
+                                        on tbl_usuario.id_instituicao = tbl_instituicao.id
+                                    inner join tbl_nivel_acesso
+                                        on tbl_usuario.id_nivel_acesso = tbl_nivel_acesso.id				
+                                    inner join tbl_level_user
+                                        on tbl_usuario.id_level = tbl_level_user.id		
+                        where tbl_usuario.id = ${id};`
 
         let result = await knexConex.raw(sql)
 

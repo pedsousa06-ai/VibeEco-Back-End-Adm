@@ -101,7 +101,12 @@ const selectAllMissao = async function(){
     try {
         
         //criando variável sql
-        let sql = `select * from tbl_missao order by id desc;`
+        let sql = `select 	tbl_missao.id ,tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, tbl_missao.data_inicio, tbl_missao.data_termino,
+                            tbl_dificuldade.nome as dificuldade
+                                from tbl_missao
+                                    inner join tbl_dificuldade
+                                        on tbl_missao.id_dificuldade = tbl_dificuldade.id
+                        order by tbl_missao.id desc;`
 
         //enviando para o banco de dados
         let result = await knexConex.raw(sql)
@@ -124,7 +129,12 @@ const selectByIdMissao = async function(id){
 
     try {
         
-        let sql = `select * from tbl_missao where id = ${id}`
+        let sql = `select 	tbl_missao.id ,tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, tbl_missao.data_inicio, tbl_missao.data_termino,
+                            tbl_dificuldade.nome as dificuldade
+                                from tbl_missao
+                                    inner join tbl_dificuldade
+                                        on tbl_missao.id_dificuldade = tbl_dificuldade.id
+                        where tbl_missao.id = ${id};`
 
         let result = await knexConex.raw(sql)
 
