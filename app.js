@@ -27,11 +27,10 @@ const bodyParserJSON = bodyParser.json()
 //criando um objeto para manipular o express
 const app = express()
 
-//conjunto de permissões a serem aplicados no CORS da API
 const corsOption = {
-    origin: ["*"], //A origrm da requisição (definido por meio do IP (192.168...), quando colocado o "*" fica livre para todas as máquinas)
-    methods: "GET, POST, PUT, DELETE, OPTION", //são os verbos permitidos para serem utilizados na API
-    allowedHeaders: ["content-type", "Autorizations"] //são permissões do cabeçalho do CORS
+    origin: "*",                                      // era ["*"]: com array, o "*" é tratado como texto e não libera nada
+    methods: "GET, POST, PUT, DELETE, OPTIONS",       // era OPTION
+    allowedHeaders: ["Content-Type", "Authorization"] // era "Autorizations"
 }
 
 //configurando as permissões da API atravez do CORS
@@ -183,3 +182,4 @@ app.use("/v1/vibeEco/administrador/usuarioADM", cors(), usuarioADMRouter) //quan
 app.listen(8080, function(){ //decidindo a porta para saída do conteúdo
     console.log("API funcionando e aguardando requisições...") //vai mostrar no terminal que a API já está funcionando
 })
+
