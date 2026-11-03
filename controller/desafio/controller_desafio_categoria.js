@@ -288,6 +288,95 @@ const excluirCategoriaIdDesafio = async function(idDesafio){
     }
 }
 
+//função para retornar os dados da tabela princiapl pelo id da tabela secundaria
+const buscarDesafioIdCategoria = async function(idCategoria){
+
+    //importando o arquivo de mensagens
+    const message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+        
+        //validando id
+        if(idCategoria == undefined || idCategoria == "" || idCategoria == null || isNaN(idCategoria)){ //se o id estiver erra ele vai entrar aqui
+
+            //personalizando mensagem
+            message.ERROR_BAD_REQUEST.field = "O campo [ID_CATEGORIA] está incorreto!"
+            return message.ERROR_BAD_REQUEST //400 (requisição incorreta)
+
+        }else{ //se estiver tudo certo com o id ele continua o programa
+
+            //enviando para o DAO
+            let result = await desafioCategoriaDAO.selectDesafioByIdCategoria(idCategoria)
+
+            //vaidando retorno
+            if(result){ //se tiver algo ele cai aqui
+
+                //conferindo tamanho do array de retorno
+                if(result.length > 0){ //se estiver conteúdo no array ele cai aqui
+
+                    message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status //true / false
+                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code //200
+                    message.DEFAULT_MESSAGE.response.desafioCategoria = result //conteúdo
+
+                    return message.DEFAULT_MESSAGE //retornando dados
+
+                }else{ //se estiver vazio ele cai aqui
+                    return message.ERROR_NOT_FOUND //404 não encontrado
+                }
+            }else{ //se não tiver nada ele cai aqui
+                return message.ERROR_INTERNAL_SERVER_MODEL //500 (model) erro no banco 
+            }
+        }
+    } catch (error) {
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER // 500 (controler)
+    }
+}
+
+//função para retornar os dados secundarios pelo id da principal
+const buscarCategoriaIdDesafio = async function(idDesafio){
+
+    //importando o arquivo de mensagens
+    const message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+        
+        //validando id
+        if(idDesafio == undefined || idDesafio == "" || idDesafio == null || isNaN(idDesafio)){ //se o id estiver erra ele vai entrar aqui
+
+            //personalizando mensagem
+            message.ERROR_BAD_REQUEST.field = "O campo [ID_DESAFIO] está incorreto!"
+            return message.ERROR_BAD_REQUEST //400 (requisição incorreta)
+
+        }else{ //se estiver tudo certo com o id ele continua o programa
+
+            //enviando para o DAO
+            let result = await desafioCategoriaDAO.selectCategoriaByIdDesafio(idDesafio)
+
+            //vaidando retorno
+            if(result){ //se tiver algo ele cai aqui
+
+                //conferindo tamanho do array de retorno
+                if(result.length > 0){ //se estiver conteúdo no array ele cai aqui
+
+                    message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status //true / false
+                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code //200
+                    message.DEFAULT_MESSAGE.response.desafioCategoria = result //conteúdo
+
+                    return message.DEFAULT_MESSAGE //retornando dados
+
+                }else{ //se estiver vazio ele cai aqui
+                    return message.ERROR_NOT_FOUND //404 não encontrado
+                }
+            }else{ //se não tiver nada ele cai aqui
+                return message.ERROR_INTERNAL_SERVER_MODEL //500 (model) erro no banco 
+            }
+        }
+    } catch (error) {
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER // 500 (controler)
+    }
+}
+
 
 //exportando arquivos
 module.exports = {
@@ -296,5 +385,7 @@ module.exports = {
     listarDesafioCategoria,
     buscarDesafioCategoriaID,
     excluirDesafioCategoria,
+    buscarDesafioIdCategoria,
+    buscarCategoriaIdDesafio,
     excluirCategoriaIdDesafio
 }

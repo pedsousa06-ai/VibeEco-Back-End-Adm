@@ -160,6 +160,7 @@ const deleteDesafio = async function(id){
             return false
         }
     } catch (error) {
+        console.log(error)
         return false
     }
 }

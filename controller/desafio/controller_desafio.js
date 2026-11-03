@@ -37,6 +37,7 @@ const inserirNovaDesafio = async function(contentType, desafio){
                 if(result){
 
                     desafio.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+                    console.log(desafio)
 
 
                     //Manipulação de dados para inserir na tabela intermediaria
@@ -111,7 +112,7 @@ const atualizarDesafio = async function(id, contentType, desafio){
                     if(result){
 
                         //Manipulação de dados na tabela de relação (tabela intermediária)
-                        let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirDesafioCategoria(desafio.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+                        let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirCategoriaIdDesafio(desafio.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
 
                         //após a exlusão de todos os dados relacionados
                         if(resultDeleteDesafioCategoria.status){
@@ -179,7 +180,8 @@ const listarDesafio = async function(){
                 for(desafio of result){
 
                     //cria o objeto relacionados 
-                    let resultDesafioCategoria = await controlerDesafioCategoria.buscarDesafioCategoriaID(desafio.id) //enviando o id  para a função que busca os dados relacionados a ele
+                    let resultDesafioCategoria = await controlerDesafioCategoria.buscarCategoriaIdDesafio(desafio.id) //enviando o id  para a função que busca os dados relacionados a ele
+
                     
                     /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
                     //console.log(resultGenero)
@@ -233,6 +235,16 @@ const buscarDesafioId = async function(id){
                 //verificando tamanho do array de resposta
                 if(result.length > 0){
 
+                    for(desafio of result){
+
+                        //cria o objeto relacionado 
+                        let resultDesafioCategoria = await controlerDesafioCategoria.buscarCategoriaIdDesafio(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultDesafioCategoria.status){ //se o status for verdadeiro, ele continua o processo
+                            desafio.categoria = resultDesafioCategoria.response.desafioCategoria //
+                        }
+                    }
+
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
@@ -264,6 +276,13 @@ const excluirDesafio = async function(id){
 
         if(validarId.status){
 
+            //excluindo relacionamento 
+            let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirCategoriaIdDesafio(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteDesafioCategoria.status){
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
             //mandadno para o banco
             let result = await desafioDAO.deleteDesafio(id)
 
@@ -273,6 +292,7 @@ const excluirDesafio = async function(id){
             }else{
                 return message.ERROR_INTERNAL_SERVER_MODEL
             }
+
         }else{
             return message.ERROR_BAD_REQUEST
         }

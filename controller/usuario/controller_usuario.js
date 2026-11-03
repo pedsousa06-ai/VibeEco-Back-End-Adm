@@ -99,6 +99,7 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
 
                     // Enviando a foto para fazer o upload do arquivo
                     let urlFoto = await UPLOAD.uploadFiles(foto)
+                    console.log(urlFoto)
 
                     if(urlFoto){
 
