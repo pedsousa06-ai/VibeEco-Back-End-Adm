@@ -37,7 +37,6 @@ const inserirNovaDesafio = async function(contentType, desafio){
                 if(result){
 
                     desafio.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
-                    console.log(desafio)
 
 
                     //Manipulação de dados para inserir na tabela intermediaria
