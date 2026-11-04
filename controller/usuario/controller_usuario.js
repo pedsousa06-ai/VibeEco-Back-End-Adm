@@ -50,16 +50,20 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
-                        console.log(usuario)
+                        // Transforma a string em um array real
+                        const objetoDesafio = JSON.parse(usuario.desafio);
+
+                        usuario.desafio = objetoDesafio //substituindo a string do json por um array real
 
                         //Manipulação de dados para inserir na tabela intermediaria
                         for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json
-
                         
                             //cria um json com os ids, para mandar os dois juntos
                             let usuarioDesafio = {
-                                "id_usuario": usuario.id,
-                                "id_desafio": desafio.id
+                                "id_usuario"    : usuario.id,
+                                "id_desafio"    : desafio.id,
+                                "status"        : desafio.status,
+                                "data_conclusao": desafio.data_conclusao
                             }
 
                             //enviando os ids para a controller da tabela intermediaria
@@ -104,7 +108,7 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 }
 
 //função para atualizar um dado
-const atualizarUsuario= async function(id, contentType, usuario, foto){
+const atualizarUsuario = async function(id, contentType, usuario, foto){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -145,13 +149,20 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
                             //após a exlusão de todos os dados relacionados
                             if(resultDeleteUsuarioDesafio.status){
 
+                                // Transforma a string em um array real
+                                const objetoDesafio = JSON.parse(usuario.desafio);
+
+                                usuario.desafio = objetoDesafio //substituindo a string do json por um array real
+
                                 //Manipulação de dados para inserir os Generos do Filme
                                 for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
-                        
-                                    //cria um json com os ids para mandar os dois juntos
+                                    
+                                    //cria um json com os ids, para mandar os dois juntos
                                     let usuarioDesafio = {
-                                        "id_usuario": usuario.id,
-                                        "id_desafio": desafio.id
+                                        "id_usuario"    : usuario.id,
+                                        "id_desafio"    : desafio.id,
+                                        "status"        : desafio.status,
+                                        "data_conclusao": desafio.data_conclusao
                                     }
                                     
                                     //enviando os ids para a controller da tabela intermediaria
@@ -216,6 +227,7 @@ const listarUsuario = async function(){
                     //cria o objeto relacionados 
                     let resultUsuarioDesafio = await controlerUsuarioDesafio.buscarDesafioIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
 
+                    console.log(resultUsuarioDesafio)
                     
                     /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
                     //console.log(resultGenero)

@@ -29,11 +29,13 @@ const insertUsuarioDesafio = async function(usuarioDesafio){
                 data_conclusao
             )
             values (
-                ${usuarioDesafio.idUsuario},
-                ${usuarioDesafio.idDesafio},
+                ${usuarioDesafio.id_usuario},
+                ${usuarioDesafio.id_desafio},
                 "${usuarioDesafio.status}",
-                "${usuarioDesafio.dataConclusao}"
+                "${usuarioDesafio.data_conclusao}"
             );`
+
+            console.log(sql)
 
         let result = await knexConex.raw(sql) 
 
@@ -43,6 +45,7 @@ const insertUsuarioDesafio = async function(usuarioDesafio){
             return false
         
     } catch (error) {
+        console.log(error)
         return false
     }
 }
@@ -53,10 +56,10 @@ const updateUsuarioDesafio = async function(usuarioDesafio){
     try {
 
         let sql =   `update tbl_usuario_desafio set 
-                        id_usuario      = ${usuarioDesafio.idUsuario},
-                        id_desafio      = ${usuarioDesafio.idDesafio},
+                        id_usuario      = ${usuarioDesafio.id_usuario},
+                        id_desafio      = ${usuarioDesafio.id_desafio},
                         status          = "${usuarioDesafio.status}",
-                        data_conclusao  = "${usuarioDesafio.dataConclusao}"
+                        data_conclusao  = "${usuarioDesafio.data_conclusao}"
 
                     where id = ${usuarioDesafio.id};`
 
@@ -182,7 +185,7 @@ const selectDesafioByIdUsuario = async function(idUsuario){
         let sql = `select   tbl_desafio.*
                         from tbl_usuario
                             inner join tbl_usuario_desafio
-                                on tbl_usuario.id = tbl_usuario_desafio.id_desafio
+                                on tbl_usuario.id = tbl_usuario_desafio.id_usuario
                             inner join tbl_desafio
                                 on tbl_desafio.id = tbl_usuario_desafio.id_desafio
                     where tbl_usuario.id = ${idUsuario};`
