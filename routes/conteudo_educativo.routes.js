@@ -11,33 +11,54 @@ const router = express.Router()
 //importando o arquivo da controller, para pode enviar os dados para serem processados
 const controllerConteudoEducativo = require("../controller/conteudo_educativo/controller_conteudo_educativo.js")
 
-// Sessão de manipulação e criação de instacias para upload de imagem 
+// Sessão de manipulação e criação de instacias para upload de arquivos
 const multer        = require("multer") // multer é uma biblioteca que permite o upload de arquivos para a API, como imagens, vídeos, áudios, etc.
 
-const storage       = multer.diskStorage({ //criando um objeto para manipular o multer
-    destination: function(req, file, cb){ //definindo o destino do arquivo
-        cb(null, "uploads") //definindo o destino do arquivo
-    }
+// guarda os arquivos em memória (buffer) só até a controller enviar para o Azure, com limite de tamanho e de quantidade
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024, files: 6 } // 10 MB por arquivo, 1 imagem + até 5 anexos
 })
 
-const upload = multer() // criando um objeto para manipular o multer
+// campos de arquivo aceitos: "img" (capa, 1 arquivo) e "anexos" (até 5 arquivos)
+const receberArquivos = upload.fields([
+    { name: "img", maxCount: 1 },
+    { name: "anexos", maxCount: 5 }
+])
+
+// executa o multer e, se der erro (arquivo grande, campo inesperado...), responde em JSON em vez de estourar 500 em HTML
+const uploadComTratamento = function(request, response, next){
+
+    receberArquivos(request, response, function(erro){
+
+        if(erro){
+            return response.status(400).json({
+                status: false,
+                status_code: 400,
+                message: "Não foi possível receber os arquivos: " + erro.message
+            })
+        }
+
+        next()
+    })
+}
 
 
 /* CRUD DA TABELA */
 
 //cadastrar novo dado
-router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, upload.single("img"), async function(request, response){
-    
+router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, uploadComTratamento, async function(request, response){
+
     //recebendo dados da requisição
     let dados = request.body
 
     //verificando content-type
     let contentType = request.headers["content-type"]
 
-    let foto = request.file //recebendo a foto enviada na requisição
+    let arquivos = request.files //recebendo os arquivos enviados na requisição ({ img: [...], anexos: [...] })
 
     //enviando para a controller
-    let result = await controllerConteudoEducativo.inserirNovaConteudoEducativo(contentType, dados, foto)
+    let result = await controllerConteudoEducativo.inserirNovaConteudoEducativo(contentType, dados, arquivos)
 
     //enviando resposta da requisição
     response.status(result.status_code)
@@ -55,7 +76,7 @@ router.get("/", async function(request, response){
     response.json(result)
 })
 
-//buscar genero pelo id
+//buscar conteúdo pelo id
 router.get("/:id", async function(request, response){
 
     //recebendo id
@@ -70,17 +91,17 @@ router.get("/:id", async function(request, response){
 })
 
 //atualizar dado
-router.put("/:id", bodyParserJSON, upload.single("img"), async function(request, response){
+router.put("/:id", bodyParserJSON, uploadComTratamento, async function(request, response){
 
     //recebendo o id e o conteúdo para serem enviados
     let id = request.params.id
     let dados = request.body
     let contentType = request.headers['content-type']
 
-    let foto = request.file //recebendo a foto enviada na requisição
+    let arquivos = request.files //recebendo os arquivos enviados na requisição
 
     //enviando os dados para controller
-    let result = await controllerConteudoEducativo.atualizarConteudoEducativo(id, contentType, dados, foto)
+    let result = await controllerConteudoEducativo.atualizarConteudoEducativo(id, contentType, dados, arquivos)
 
     //enviando para o usuário
     response.status(result.status_code)
