@@ -10,6 +10,7 @@ const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL)
 const usuarioDAO = require("../../model/DAO/usuario/usuario.js")
+const controlerUsuarioDesafio = require("./controller_usuario_desafio.js")
 const { json } = require("body-parser")
 const express = require("express")
 
@@ -46,6 +47,30 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
                     let result = await usuarioDAO.insertUsuario(usuario)
     
                     if(result){
+
+                        usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+
+                        console.log(usuario)
+
+                        //Manipulação de dados para inserir na tabela intermediaria
+                        for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json
+
+                        
+                            //cria um json com os ids, para mandar os dois juntos
+                            let usuarioDesafio = {
+                                "id_usuario": usuario.id,
+                                "id_desafio": desafio.id
+                            }
+
+                            //enviando os ids para a controller da tabela intermediaria
+                            let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
+
+
+                            if(!resultInsertUsuarioDesafio.status){
+                                return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                            }
+
+                        }
     
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
     
@@ -99,6 +124,7 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
 
                     // Enviando a foto para fazer o upload do arquivo
                     let urlFoto = await UPLOAD.uploadFiles(foto)
+                    console.log(urlFoto)
 
                     if(urlFoto){
 
@@ -112,6 +138,30 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
                         let result = await usuarioDAO.updateUsuario(usuario)
 
                         if(result){
+
+                            //Manipulação de dados na tabela de relação (tabela intermediária)
+                            let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                            //após a exlusão de todos os dados relacionados
+                            if(resultDeleteUsuarioDesafio.status){
+
+                                //Manipulação de dados para inserir os Generos do Filme
+                                for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
+                        
+                                    //cria um json com os ids para mandar os dois juntos
+                                    let usuarioDesafio = {
+                                        "id_usuario": usuario.id,
+                                        "id_desafio": desafio.id
+                                    }
+                                    
+                                    //enviando os ids para a controller da tabela intermediaria
+                                    let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
+
+                                    if(!resultInsertUsuarioDesafio.status){
+                                        return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                    }
+                                }
+                            }                            
 
                             message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                             message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
@@ -160,6 +210,20 @@ const listarUsuario = async function(){
 
             if(result.length > 0){
 
+                //percorrendo o array
+                for(usuario of result){
+
+                    //cria o objeto relacionados 
+                    let resultUsuarioDesafio = await controlerUsuarioDesafio.buscarDesafioIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    
+                    /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
+                    //console.log(resultGenero)
+
+                    if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
+                        usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+                }
                 //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
@@ -204,6 +268,16 @@ const buscarUsuarioId = async function(id){
                 //verificando tamanho do array de resposta
                 if(result.length > 0){
 
+                    for(usuario of result){
+
+                        //cria o objeto relacionado 
+                        let resultUsuarioDesafio = await controlerUsuarioDesafio.buscarDesafioIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
+                            usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //
+                        }
+                    }
+
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
@@ -234,6 +308,13 @@ const excluirUsuario = async function(id){
         let validarId = await buscarUsuarioId(id)
 
         if(validarId.status){
+
+            //excluindo relacionamento 
+            let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteUsuarioDesafio.status){
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
 
             //mandadno para o banco
             let result = await usuarioDAO.deleteUsuario(id)
