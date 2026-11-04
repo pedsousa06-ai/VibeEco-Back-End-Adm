@@ -2,7 +2,7 @@
  * Objetivo: Arquivo responsável pelo CRUD no Banco de dados MySQL na tabela de desafio
  * Data: 09/10/2026
  * Autor: Lucas Dias Brandão Kolle
- * Versão: 1.0.10.26
+ * Versão: 1.1.10.26
  ********************************************************************************************************************************************************************************************/
 
 //importando a biblioteca para gerenciar o banco de dados no node.js
@@ -15,43 +15,41 @@ const knexConfig = require("../../database_config_knex/knex_file.js")
 const knexConex = knex(knexConfig.development) //aciona o knex e passa as configurações estabelecidas no arquivo
 
 /* INICIANDO CRUD DA TABELA DE DESAFIO */
+/* As datas saem como texto 'YYYY-MM-DD' (date_format), igual ao select de missões: evita o fuso horário deslocar o dia. */
+/* Os valores são enviados por "?" (bindings do knex): evita quebrar a query com aspas no texto e SQL injection */
 
 //inserir dado
 const insertDesafio = async function(desafio){
 
     try {
 
-        //criando variável sql
-        let sql = 
-            `
-                insert into tbl_desafio (
-                    nome,
-                    descricao,
-                    super_coins,
-                    data_inicio,
-                    data_termino,
-                    id_dificuldade
-                )
-                values(
-                    "${desafio.nome}",
-                    "${desafio.descricao}",
-                    ${desafio.super_coins},
-                    "${desafio.data_inicio}",
-                    "${desafio.data_termino}",
-                    ${desafio.id_dificuldade}
-                );
-            `
+        let sql =
+            `insert into tbl_desafio (
+                nome,
+                descricao,
+                super_coins,
+                data_inicio,
+                data_termino,
+                id_dificuldade
+            )
+            values (?, ?, ?, ?, ?, ?);`
 
-        //executando no banco de dados
-        let result = await knexConex.raw(sql) //usa a coneção com banco para executar a variável sql
+        let result = await knexConex.raw(sql, [
+            desafio.nome,
+            desafio.descricao ?? null,
+            desafio.super_coins,
+            desafio.data_inicio,
+            desafio.data_termino,
+            desafio.id_dificuldade
+        ])
 
-        //validadndo retorno do banco
+        //validando retorno do banco
         if(result){
             return result[0].insertId //pega o id do item adicionado para retornar, ao invés de retornar só o "true"
         }else{
             return false
         }
-        
+
     } catch (error) {
         console.log(error)
         return false
@@ -64,20 +62,25 @@ const updateDesafio = async function(desafio){
 
     try {
 
-        //criando variável sql
-        let sql = 
-        `
-            update tbl_desafio set 
-                nome 			    = "${desafio.nome}",
-                descricao 		    = "${desafio.descricao}",
-                super_coins 	    = ${desafio.super_coins},
-                data_inicio 	    = "${desafio.data_inicio}",
-                data_termino 	    = "${desafio.data_termino}",
-                id_dificuldade 	    = ${desafio.id_dificuldade}
-            where id = ${desafio.id};
-        `
+        let sql =
+            `update tbl_desafio set
+                nome            = ?,
+                descricao       = ?,
+                super_coins     = ?,
+                data_inicio     = ?,
+                data_termino    = ?,
+                id_dificuldade  = ?
+            where id = ?;`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [
+            desafio.nome,
+            desafio.descricao ?? null,
+            desafio.super_coins,
+            desafio.data_inicio,
+            desafio.data_termino,
+            desafio.id_dificuldade,
+            desafio.id
+        ])
 
         //validando retorno
         if(result){
@@ -85,8 +88,9 @@ const updateDesafio = async function(desafio){
         }else{
             return false
         }
-        
+
     } catch (error) {
+        console.log(error)
         return false
     }
 
@@ -96,21 +100,20 @@ const updateDesafio = async function(desafio){
 const selectAllDesafio = async function(){
 
     try {
-        
-        //criando variável sql
-        let sql = `select	tbl_desafio.id, tbl_desafio.nome, tbl_desafio.descricao, tbl_desafio.super_coins, tbl_desafio.data_inicio, tbl_desafio.data_termino,
+
+        let sql = `select	tbl_desafio.id, tbl_desafio.nome, tbl_desafio.descricao, tbl_desafio.super_coins,
+                            date_format(tbl_desafio.data_inicio, '%Y-%m-%d') as data_inicio,
+                            date_format(tbl_desafio.data_termino, '%Y-%m-%d') as data_termino,
                             tbl_dificuldade.nome as dificuldade
                                 from tbl_desafio
                                     inner join tbl_dificuldade
                                         on tbl_desafio.id_dificuldade = tbl_dificuldade.id
                         order by tbl_desafio.id desc;`
 
-        //enviando para o banco de dados
         let result = await knexConex.raw(sql)
 
         //Verificando se é um array
         if(Array.isArray(result)){
-
             return result[0]
         }else{
             return false
@@ -125,15 +128,17 @@ const selectAllDesafio = async function(){
 const selectByIdDesafio = async function(id){
 
     try {
-        
-        let sql = `select	tbl_desafio.id, tbl_desafio.nome, tbl_desafio.descricao, tbl_desafio.super_coins, tbl_desafio.data_inicio, tbl_desafio.data_termino,
+
+        let sql = `select	tbl_desafio.id, tbl_desafio.nome, tbl_desafio.descricao, tbl_desafio.super_coins,
+                            date_format(tbl_desafio.data_inicio, '%Y-%m-%d') as data_inicio,
+                            date_format(tbl_desafio.data_termino, '%Y-%m-%d') as data_termino,
                             tbl_dificuldade.nome as dificuldade
                                 from tbl_desafio
                                     inner join tbl_dificuldade
                                         on tbl_desafio.id_dificuldade = tbl_dificuldade.id
-                        where tbl_desafio.id = ${id};`
+                        where tbl_desafio.id = ?;`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [id])
 
         if(Array.isArray(result)){
             return result[0]
@@ -141,6 +146,7 @@ const selectByIdDesafio = async function(id){
             return false
         }
     } catch (error) {
+        console.log(error)
         return false
     }
 }
@@ -149,10 +155,10 @@ const selectByIdDesafio = async function(id){
 const deleteDesafio = async function(id){
 
     try {
-        
-        let sql = `delete from tbl_desafio where id = ${id}`
 
-        let result = await knexConex.raw(sql)
+        let sql = `delete from tbl_desafio where id = ?;`
+
+        let result = await knexConex.raw(sql, [id])
 
         if(result){
             return true

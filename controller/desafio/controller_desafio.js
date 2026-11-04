@@ -1,8 +1,8 @@
 /********************************************************************************************************************************************************************************************
  * Objetivo: Arquivo responsável pela validação, tratamento e manipulação de dados para o CRUD de desafio.
  * Data: 09/10/2026
- * Autor: Lucas Dias Brnadão Kolle
- * Versão: 1.0.10.26
+ * Autor: Lucas Dias Brandão Kolle
+ * Versão: 1.1.10.26
  *******************************************************************************************************************************************************************************************/
 
 //importando arquivo de mensagens
@@ -10,9 +10,33 @@ const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL) e da controller da tabela intermediaria
 const desafioDAO = require("../../model/DAO/desafio/desafio.js")
-const controlerDesafioCategoria = require("./controller_desafio_categoria.js")
-const { json } = require("body-parser")
-const express = require("express")
+const controllerDesafioCategoria = require("./controller_desafio_categoria.js")
+
+/* FUNÇÕES AUXILIARES */
+
+//insere os vínculos desafio x categoria. Retorna true se todos foram inseridos
+const vincularCategorias = async function(idDesafio, categorias){
+
+    for(const categoria of categorias){ //const: evita variável global compartilhada entre requisições
+
+        let resultado = await controllerDesafioCategoria.inserirNovoDesafioCategoria({
+            "id_desafio": idDesafio,
+            "id_categoria": categoria.id
+        })
+
+        if(!resultado.status) return false
+    }
+
+    return true
+}
+
+//busca as categorias do desafio (pelo ID DO DESAFIO) e devolve sempre um array
+const categoriasDoDesafio = async function(idDesafio){
+
+    let resultado = await controllerDesafioCategoria.buscarCategoriasPorIdDesafio(idDesafio)
+
+    return resultado.status ? resultado.response.categoria : []
+}
 
 /* FUNÇÕES PARA O CRUD */
 
@@ -23,59 +47,28 @@ const inserirNovaDesafio = async function(contentType, desafio){
 
     try {
 
-        //validando content type
-        if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
+        if(String(contentType).toUpperCase() != "APPLICATION/JSON")
+            return message.ERROR_CONTENT_TYPE //415
 
-            //validando dados recebidos
-            let validando = await validarDadosDesafio(desafio)
+        let validando = validarDadosDesafio(desafio)
+        if(validando) return validando //400
 
-            if(!validando){
+        let result = await desafioDAO.insertDesafio(desafio)
+        if(!result) return message.ERROR_INTERNAL_SERVER_MODEL //500
 
-                //mandando pro banco 
-                let result = await desafioDAO.insertDesafio(desafio)
+        desafio.id = result //coloca no JSON o ID gerado no insert
 
-                if(result){
+        //inserindo os vínculos na tabela intermediária
+        if(!await vincularCategorias(desafio.id, desafio.categoria))
+            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que as categorias não foram inseridas
 
-                    desafio.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+        message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status
+        message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
+        message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
+        message.DEFAULT_MESSAGE.response = desafio
 
+        return message.DEFAULT_MESSAGE //201
 
-                    //Manipulação de dados para inserir na tabela intermediaria
-                    for(categoria of desafio.categoria){ //estrutura para percorrer o array recebido na requisição no json
-
-                       
-                        //cria um json com os ids, para mandar os dois juntos
-                        let desafioCategoria = {
-                            "id_desafio": desafio.id,
-                            "id_categoria": categoria.id
-                        }
-
-                        //enviando os ids para a controller da tabela intermediaria
-                        let resultInsertDesafioCategoria = await controlerDesafioCategoria.inserirNovoDesafioCategoria(desafioCategoria)
-
-
-                        if(!resultInsertDesafioCategoria.status){
-                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
-                        }
-
-                    }
-
-                    message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
-                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
-                    message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
-                    message.DEFAULT_MESSAGE.response = desafio //aparece os dados do ator do response para o usuário conferir
-
-                    return message.DEFAULT_MESSAGE //200 (retorna o cabeçalho com a mensagem de sucesso e os dados)
-                }else{
-                    return message.ERROR_INTERNAL_SERVER_MODEL
-                }
-            }else{
-                return validando
-            }
-
-        }else{
-            return message.ERROR_CONTENT_TYPE //415 (retorna erro de tipo de dados) 
-        }
-        
     } catch (error) {
         console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
@@ -89,9 +82,12 @@ const atualizarDesafio = async function(id, contentType, desafio){
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
+
         //verificando existencia do id
         let validarId = await buscarDesafioId(id)
+        if(!validarId.status) return validarId //400 ou 404
 
+<<<<<<< HEAD
         if(validarId.status){
 
             //verificando tipo de dados
@@ -151,12 +147,35 @@ const atualizarDesafio = async function(id, contentType, desafio){
             }else{
                 return message.ERROR_CONTENT_TYPE
             }
+=======
+        if(String(contentType).toUpperCase() != "APPLICATION/JSON")
+            return message.ERROR_CONTENT_TYPE
 
-        }else{
-            return validarId //mensagem de erro da própria função
-        }
-        
+        let validarDados = validarDadosDesafio(desafio)
+        if(validarDados) return validarDados
+
+        desafio.id = Number(id)
+
+        let result = await desafioDAO.updateDesafio(desafio)
+        if(!result) return message.ERROR_INTERNAL_SERVER_MODEL
+
+        //apaga os vínculos antigos (pelo ID DO DESAFIO) e recria os novos
+        let resultDelete = await controllerDesafioCategoria.excluirCategoriaIdDesafio(desafio.id)
+        if(!resultDelete.status) return message.ERROR_INTERNAL_SERVER_MODEL
+
+        if(!await vincularCategorias(desafio.id, desafio.categoria))
+            return message.SUCESS_CREATED_ITEM_WARNING
+
+        message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
+        message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
+        message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
+        message.DEFAULT_MESSAGE.response = desafio
+
+        return message.DEFAULT_MESSAGE //200
+>>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
+
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
@@ -168,13 +187,14 @@ const listarDesafio = async function(){
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
-        
+
         let result = await desafioDAO.selectAllDesafio()
 
         if(result){
 
             if(result.length > 0){
 
+<<<<<<< HEAD
                 //percorrendo o array
                 for(desafio of result){
 
@@ -188,15 +208,19 @@ const listarDesafio = async function(){
                     if(resultDesafioCategoria.status){ //se o status for verdadeiro, ele continua o processo
                         desafio.categoria = resultDesafioCategoria.response.desafioCategoria //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
+=======
+                //anexando as categorias de cada desafio
+                for(const desafio of result){
+                    desafio.categoria = await categoriasDoDesafio(desafio.id)
+>>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
                 }
 
-                //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                 message.DEFAULT_MESSAGE.response.count = result.length
                 message.DEFAULT_MESSAGE.response.desafio = result
 
-                return message.DEFAULT_MESSAGE //retorna o cabeçalho com o "result" que contém os dados
+                return message.DEFAULT_MESSAGE
 
             }else{
                 return message.ERROR_NOT_FOUND //404
@@ -205,35 +229,29 @@ const listarDesafio = async function(){
             return message.ERROR_INTERNAL_SERVER_MODEL
         }
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 }
 
-//função para bucar um dado pelo id
+//função para buscar um dado pelo id
 const buscarDesafioId = async function(id){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
 
-        //tratando id
         //tratando o id, para não mandar conteúdos errados pro banco
         if(id == undefined || id == "" || id == null || isNaN(id)){
             message.ERROR_BAD_REQUEST.field = "[ID] INVÁLIDO"
             return message.ERROR_BAD_REQUEST //400
-        
-        //se o id estiver no formato correto ele ennvia pro DAO
-        }else{
-            
-            //enviando para o banco
-            let result = await desafioDAO.selectByIdDesafio(id)
+        }
 
-            //tratando retorno
-            if(result){
+        let result = await desafioDAO.selectByIdDesafio(id)
 
-                //verificando tamanho do array de resposta
-                if(result.length > 0){
+        if(result){
 
+<<<<<<< HEAD
                     for(desafio of result){
 
                         //cria o objeto relacionado 
@@ -248,17 +266,27 @@ const buscarDesafioId = async function(id){
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                     message.DEFAULT_MESSAGE.response.desafio = result
+=======
+            if(result.length > 0){
 
-                    return message.DEFAULT_MESSAGE //200                 
-                }else{
-                    return message.ERROR_NOT_FOUND
-                }
+                result[0].categoria = await categoriasDoDesafio(result[0].id)
+
+                message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
+                message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
+                message.DEFAULT_MESSAGE.response.desafio = result
+
+                return message.DEFAULT_MESSAGE //200
+>>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
+
             }else{
-                return message.ERROR_INTERNAL_SERVER_MODEL
+                return message.ERROR_NOT_FOUND
             }
+        }else{
+            return message.ERROR_INTERNAL_SERVER_MODEL
         }
-        
+
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 }
@@ -269,12 +297,11 @@ const excluirDesafio = async function(id){
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
-        
-        //validando id
+
         let validarId = await buscarDesafioId(id)
+        if(!validarId.status) return validarId //400 ou 404
 
-        if(validarId.status){
-
+<<<<<<< HEAD
             //excluindo relacionamento 
             let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirCategoriaIdDesafio(id) //exclui os dados relacionados a ele
 
@@ -284,58 +311,72 @@ const excluirDesafio = async function(id){
 
             //mandadno para o banco
             let result = await desafioDAO.deleteDesafio(id)
+=======
+        //primeiro os vínculos (FK), depois o desafio
+        let resultVinculos = await controllerDesafioCategoria.excluirCategoriaIdDesafio(id)
+        if(!resultVinculos.status) return message.ERROR_INTERNAL_SERVER_MODEL
+>>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
 
-            if(result){
+        let result = await desafioDAO.deleteDesafio(id)
 
+<<<<<<< HEAD
                 return message.SUCCESS_DELETED_ITEM //200 registro excluido
             }else{
                 return message.ERROR_INTERNAL_SERVER_MODEL
             }
 
+=======
+        if(result){
+            return message.SUCCESS_DELETED_ITEM //200 registro excluido
+>>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
         }else{
-            return message.ERROR_BAD_REQUEST
+            return message.ERROR_INTERNAL_SERVER_MODEL //500 (ex.: usuário já participa do desafio)
         }
 
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
 }
 
-//função para validar os dados recebidos na requição
-const validarDadosDesafio = async function(dados){
+//função para validar os dados recebidos na requisição
+const validarDadosDesafio = function(dados){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
-        // se o "dados.nome" (conteúdo do Json) vier vazio ou "null" ou undefined ou com mais caracteres do que é permitido (.lenght -> conta a quantidade de caracteres)
-        if(dados.nome == undefined || dados.nome == "" || dados.nome == null || dados.nome.length > 100){
+    if(dados.nome == undefined || dados.nome == "" || dados.nome == null || dados.nome.length > 100){
+        message.ERROR_BAD_REQUEST.field = "[NOME] INVALIDO"
+        return message.ERROR_BAD_REQUEST
 
-            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
-            message.ERROR_BAD_REQUEST.field = "[NOME] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else if(dados.super_coins == undefined || dados.super_coins == "" || dados.super_coins == null || isNaN(dados.super_coins)){
+    }else if(dados.super_coins === undefined || dados.super_coins === "" || dados.super_coins === null || isNaN(dados.super_coins)){
+        message.ERROR_BAD_REQUEST.field = "[SUPER_COINS] INVALIDO"
+        return message.ERROR_BAD_REQUEST
 
-            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
-            message.ERROR_BAD_REQUEST.field = "[COINS] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else if(dados.data_inicio == undefined || dados.data_inicio == "" || dados.data_inicio == null || dados.data_inicio.length != 10){
+    }else if(dados.id_dificuldade === undefined || dados.id_dificuldade === "" || dados.id_dificuldade === null || isNaN(dados.id_dificuldade)){
+        message.ERROR_BAD_REQUEST.field = "[ID_DIFICULDADE] INVALIDO"
+        return message.ERROR_BAD_REQUEST
 
-            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
-            message.ERROR_BAD_REQUEST.field = "[DATA_INICIO] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else if(dados.data_termino == undefined || dados.data_termino == "" || dados.data_termino == null || dados.data_termino.length != 10){
+    }else if(dados.data_inicio == undefined || dados.data_inicio == "" || dados.data_inicio == null || dados.data_inicio.length != 10){
+        message.ERROR_BAD_REQUEST.field = "[DATA_INICIO] INVALIDO"
+        return message.ERROR_BAD_REQUEST
 
-            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
-            message.ERROR_BAD_REQUEST.field = "[DATA_TERMINO] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else{
-            return false
-        }
-    
+    }else if(dados.data_termino == undefined || dados.data_termino == "" || dados.data_termino == null || dados.data_termino.length != 10){
+        message.ERROR_BAD_REQUEST.field = "[DATA_TERMINO] INVALIDO"
+        return message.ERROR_BAD_REQUEST
+
+    }else if(dados.data_termino < dados.data_inicio){ //YYYY-MM-DD compara corretamente como texto
+        message.ERROR_BAD_REQUEST.field = "[DATA_TERMINO] NÃO PODE SER ANTERIOR À DATA DE INÍCIO"
+        return message.ERROR_BAD_REQUEST
+
+    }else if(!Array.isArray(dados.categoria) || dados.categoria.length == 0 || dados.categoria.some(c => !c || c.id == undefined || c.id === null || isNaN(c.id))){
+        message.ERROR_BAD_REQUEST.field = "[CATEGORIA] INVALIDA (envie um array com ao menos um {id})"
+        return message.ERROR_BAD_REQUEST
+
+    }else{
+        return false
+    }
+
 }
 
 /* EXPORTANDO FUNÇÕES */
