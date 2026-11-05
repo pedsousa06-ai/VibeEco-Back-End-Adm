@@ -347,6 +347,58 @@ const excluirUsuario = async function(id){
 
 }
 
+// função para validar email e senha do usuário
+const validarLogin = async function(login){
+
+    let message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+
+        //tratando id
+        //tratando o id, para não mandar conteúdos errados pro banco
+        if(login.email == undefined || login.email == "" || login.email == null || login.email.length > 255){
+
+            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
+            message.ERROR_BAD_REQUEST.field = "[EMAIL] INVALIDO"
+            return message.ERROR_BAD_REQUEST
+    
+        }else if(login.senha == undefined || login.senha == "" || login.senha == null || login.senha.length < 8 || login.senha.length > 25){
+
+            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
+            message.ERROR_BAD_REQUEST.field = "[SENHA] INVALIDO"
+            return message.ERROR_BAD_REQUEST
+    
+        }else{
+            
+            //enviando para o banco
+            let result = await usuarioDAO.validarLogin(login)
+            console.log(result)
+
+            //tratando retorno
+            if(result){
+
+                //verificando tamanho do array de resposta
+                if(result.length > 0){
+
+                    //editando cabeçalho
+                    message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
+                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
+                    message.DEFAULT_MESSAGE.response.usuario = result
+
+                    return message.DEFAULT_MESSAGE //200                 
+                }else{
+                    return message.ERROR_NOT_FOUND
+                }
+            }else{
+                return message.ERROR_INTERNAL_SERVER_MODEL
+            }
+        }
+        
+    } catch (error) {
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
+}
+
 //função para validar os dados recebidos na requição
 const validarDadosUsuario = async function(dados){
 
@@ -377,11 +429,13 @@ const validarDadosUsuario = async function(dados){
     
 }
 
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     inserirNovaUsuario,
     atualizarUsuario,
     listarUsuario,
     buscarUsuarioId,
-    excluirUsuario
+    excluirUsuario,
+    validarLogin
 }

@@ -202,6 +202,32 @@ const deleteUsuario = async function(id){
         }else{
             return false
         }
+
+    } catch (error) {
+        return false
+    }
+}
+
+// validar login
+const validarLogin = async function(login){
+
+    try {
+        
+        let sql = `select tbl_usuario.id, tbl_usuario.nome
+		                    from tbl_usuario
+	                    where tbl_usuario.email = "${login.email}" 
+	                    and tbl_usuario.senha = "${login.senha}";`
+
+        console.log(sql)
+
+        let result = await knexConex.raw(sql)
+
+        if(Array.isArray(result)){
+            return result[0]
+        }else{
+            return false
+        }
+
     } catch (error) {
         return false
     }
@@ -213,5 +239,6 @@ module.exports = {
     updateUsuario,
     selectAllUsuario,
     selectByIdUsuario,
-    deleteUsuario
+    deleteUsuario,
+    validarLogin
 }
