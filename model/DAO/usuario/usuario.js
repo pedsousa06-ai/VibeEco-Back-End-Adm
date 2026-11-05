@@ -213,10 +213,11 @@ const validarLogin = async function(login){
 
     try {
         
-        let sql = `select tbl_usuario.id, tbl_usuario.nome
-		                    from tbl_usuario
-	                    where tbl_usuario.email = "${login.email}" 
-	                    and tbl_usuario.senha = "${login.senha}";`
+        let sql = `select	tbl_usuario.id, tbl_usuario.nome, tbl_usuario.email, tbl_usuario.senha, tbl_nivel_acesso.nivel as nivel_acesso
+                                from tbl_usuario
+                                    inner join tbl_nivel_acesso
+                                        on tbl_usuario.id_nivel_acesso = tbl_nivel_acesso.id
+                        where tbl_usuario.email = "${login.email}" and tbl_usuario.senha = "${login.senha}";`
 
         console.log(sql)
 

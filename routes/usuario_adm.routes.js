@@ -42,6 +42,20 @@ router.get("/", async function(request, response){
     response.json(result)
 })
 
+// validar login do usuário
+router.get("/login", bodyParserJSON, async function(request, response){
+
+    //recebendo id
+    let login = request.body
+
+    //chamando função da controller e enviando o id
+    let result = await controllerUsuarioADM.validarLogin(login)
+
+    //enviando resposta
+    response.status(result.status_code)
+    response.json(result)
+})
+
 //buscar genero pelo id
 router.get("/:id", async function(request, response){
 
