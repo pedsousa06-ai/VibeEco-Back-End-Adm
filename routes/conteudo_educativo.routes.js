@@ -44,6 +44,23 @@ const uploadComTratamento = function(request, response, next){
 }
 
 
+// função para receber o toke e validar o JWT
+const verifyJWT = async function(request, response, next){
+    
+    const jwt = require("../middleware/middlewareJWT.js") //importando o middleware para validar o token
+    
+    let token = request.headers["x-access-token"] //recebendo o token do cabeçalho da requisição
+
+    const autencidadeToken = await jwt.validarJWT(token) //validando o token
+
+    if(autencidadeToken){ //se o token for válido, chama a próxima função
+        next()
+    }else{ //se o token for inválido, retorna um erro
+        return response.status(401).end("Acesso negado! Token inválido ou expirado.")
+    }
+}
+
+
 /* CRUD DA TABELA */
 
 //cadastrar novo dado
