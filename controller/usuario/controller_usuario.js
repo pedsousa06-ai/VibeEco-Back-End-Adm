@@ -17,6 +17,9 @@ const express = require("express")
 // import da controller que faz upload da foto
 const UPLOAD = require("../upload/controller_upload_azure.js")
 
+// import do arquivo do JWT (JSON Web Token)
+const jwt = require("../../middleware/middlewareJWT.js")
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -101,7 +104,6 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
         }
         
     } catch (error) {
-        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
     }
 
@@ -128,7 +130,6 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
 
                     // Enviando a foto para fazer o upload do arquivo
                     let urlFoto = await UPLOAD.uploadFiles(foto)
-                    console.log(urlFoto)
 
                     if(urlFoto){
 
@@ -186,7 +187,6 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
 
 
                     }else{
-                        console.log("Erro ao enviar a foto")
                         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (erro no controller)
                     }
     
@@ -202,7 +202,6 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
         }
         
     } catch (error) {
-        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
@@ -226,11 +225,6 @@ const listarUsuario = async function(){
 
                     //cria o objeto relacionados 
                     let resultUsuarioDesafio = await controlerUsuarioDesafio.buscarDesafioIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
-
-                    console.log(resultUsuarioDesafio)
-                    
-                    /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
-                    //console.log(resultGenero)
 
                     if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
@@ -323,6 +317,8 @@ const excluirUsuario = async function(id){
 
             //excluindo relacionamento 
             let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
+            console.log(resultDeleteUsuarioDesafio)
+
 
             if(!resultDeleteUsuarioDesafio.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
@@ -372,13 +368,18 @@ const validarLogin = async function(login){
             
             //enviando para o banco
             let result = await usuarioDAO.validarLogin(login)
-            console.log(result)
 
             //tratando retorno
             if(result){
 
                 //verificando tamanho do array de resposta
                 if(result.length > 0){
+
+                    // criando o token JWT com o id do usuario para mandar na resposta
+                    let tokenUsuario = await jwt.createJWT(result.id)
+
+                    // adicionando o token JTW no objeto de resposta
+                    result[0].token = tokenUsuario
 
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status

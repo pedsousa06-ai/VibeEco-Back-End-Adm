@@ -66,7 +66,6 @@ const insertUsuario = async function(usuario){
         }
         
     } catch (error) {
-        console.log(error)
         return false
     }
 
@@ -147,7 +146,6 @@ const selectAllUsuario = async function(){
             return false
         }
     } catch (error) {
-        console.log(error)
         return false
     }
 }
@@ -204,6 +202,7 @@ const deleteUsuario = async function(id){
         }
 
     } catch (error) {
+        console.log(error)
         return false
     }
 }
@@ -219,7 +218,6 @@ const validarLogin = async function(login){
                                         on tbl_usuario.id_nivel_acesso = tbl_nivel_acesso.id
                         where tbl_usuario.email = "${login.email}" and tbl_usuario.senha = "${login.senha}";`
 
-        console.log(sql)
 
         let result = await knexConex.raw(sql)
 

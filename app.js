@@ -37,7 +37,6 @@ const corsOption = {
 app.use(cors(corsOption))
 
 
-
 /* SESSÃO DE LEVEL_USUARIO */
 
 //importando o arquivo onde estão as rotas da tabela
