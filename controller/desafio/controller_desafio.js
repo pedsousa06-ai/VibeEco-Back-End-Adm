@@ -87,67 +87,6 @@ const atualizarDesafio = async function(id, contentType, desafio){
         let validarId = await buscarDesafioId(id)
         if(!validarId.status) return validarId //400 ou 404
 
-<<<<<<< HEAD
-        if(validarId.status){
-
-            //verificando tipo de dados
-            if(String(contentType).toUpperCase() == "APPLICATION/JSON"){
-
-                //validar dados
-                let validarDados = await validarDadosDesafio(desafio)
-
-                if(!validarDados){
-
-                    //se estiver tudo certo ele adiciona o id no objeto
-                    desafio.id = Number(id)
-    
-                    //enviando para o banco 
-                    let result = await desafioDAO.updateDesafio(desafio)
-
-                    if(result){
-
-                        //Manipulação de dados na tabela de relação (tabela intermediária)
-                        let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirCategoriaIdDesafio(desafio.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
-
-                        //após a exlusão de todos os dados relacionados
-                        if(resultDeleteDesafioCategoria.status){
-
-                            //Manipulação de dados para inserir os Generos do Filme
-                            for(categoria of desafio.categoria){ //estrutura para percorrer o array recebido na requisição no json 
-                       
-                                //cria um json com os ids para mandar os dois juntos
-                                let desafioCategoria = {
-                                    "id_desafio": desafio.id,
-                                    "id_categoria": categoria.id
-                                }
-                                
-                                //enviando os ids para a controller da tabela intermediaria
-                                let resultInsertDesafioCategoria = await controlerDesafioCategoria.inserirNovoDesafioCategoria(desafioCategoria)
-
-                                if(!resultInsertDesafioCategoria.status){
-                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
-                                }
-                            }
-                        }
-
-
-                        message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
-                        message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
-                        message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
-                        message.DEFAULT_MESSAGE.response = desafio //envia os dados no response, para o usuário visualizar
-
-                        return message.DEFAULT_MESSAGE //200
-                    }else{
-                        return message.ERROR_INTERNAL_SERVER_MODEL
-                    }
-    
-                }else{
-                    return validarDados //mensagem de erro da própria função
-                }
-            }else{
-                return message.ERROR_CONTENT_TYPE
-            }
-=======
         if(String(contentType).toUpperCase() != "APPLICATION/JSON")
             return message.ERROR_CONTENT_TYPE
 
@@ -172,7 +111,6 @@ const atualizarDesafio = async function(id, contentType, desafio){
         message.DEFAULT_MESSAGE.response = desafio
 
         return message.DEFAULT_MESSAGE //200
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
 
     } catch (error) {
         console.log(error)
@@ -194,25 +132,9 @@ const listarDesafio = async function(){
 
             if(result.length > 0){
 
-<<<<<<< HEAD
-                //percorrendo o array
-                for(desafio of result){
-
-                    //cria o objeto relacionados 
-                    let resultDesafioCategoria = await controlerDesafioCategoria.buscarCategoriaIdDesafio(desafio.id) //enviando o id  para a função que busca os dados relacionados a ele
-
-                    
-                    /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
-                    //console.log(resultGenero)
-
-                    if(resultDesafioCategoria.status){ //se o status for verdadeiro, ele continua o processo
-                        desafio.categoria = resultDesafioCategoria.response.desafioCategoria //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
-                    }
-=======
                 //anexando as categorias de cada desafio
                 for(const desafio of result){
                     desafio.categoria = await categoriasDoDesafio(desafio.id)
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
                 }
 
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
@@ -251,22 +173,6 @@ const buscarDesafioId = async function(id){
 
         if(result){
 
-<<<<<<< HEAD
-                    for(desafio of result){
-
-                        //cria o objeto relacionado 
-                        let resultDesafioCategoria = await controlerDesafioCategoria.buscarCategoriaIdDesafio(id) //enviando o id  para a função que busca os dados relacionados a ele
-
-                        if(resultDesafioCategoria.status){ //se o status for verdadeiro, ele continua o processo
-                            desafio.categoria = resultDesafioCategoria.response.desafioCategoria //
-                        }
-                    }
-
-                    //editando cabeçalho
-                    message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
-                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
-                    message.DEFAULT_MESSAGE.response.desafio = result
-=======
             if(result.length > 0){
 
                 result[0].categoria = await categoriasDoDesafio(result[0].id)
@@ -276,7 +182,6 @@ const buscarDesafioId = async function(id){
                 message.DEFAULT_MESSAGE.response.desafio = result
 
                 return message.DEFAULT_MESSAGE //200
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
 
             }else{
                 return message.ERROR_NOT_FOUND
@@ -301,34 +206,14 @@ const excluirDesafio = async function(id){
         let validarId = await buscarDesafioId(id)
         if(!validarId.status) return validarId //400 ou 404
 
-<<<<<<< HEAD
-            //excluindo relacionamento 
-            let resultDeleteDesafioCategoria = await controlerDesafioCategoria.excluirCategoriaIdDesafio(id) //exclui os dados relacionados a ele
-
-            if(!resultDeleteDesafioCategoria.status){
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
-
-            //mandadno para o banco
-            let result = await desafioDAO.deleteDesafio(id)
-=======
         //primeiro os vínculos (FK), depois o desafio
         let resultVinculos = await controllerDesafioCategoria.excluirCategoriaIdDesafio(id)
         if(!resultVinculos.status) return message.ERROR_INTERNAL_SERVER_MODEL
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
 
         let result = await desafioDAO.deleteDesafio(id)
 
-<<<<<<< HEAD
-                return message.SUCCESS_DELETED_ITEM //200 registro excluido
-            }else{
-                return message.ERROR_INTERNAL_SERVER_MODEL
-            }
-
-=======
         if(result){
             return message.SUCCESS_DELETED_ITEM //200 registro excluido
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
         }else{
             return message.ERROR_INTERNAL_SERVER_MODEL //500 (ex.: usuário já participa do desafio)
         }

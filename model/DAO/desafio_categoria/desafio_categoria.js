@@ -133,71 +133,7 @@ const deleteDesafioCategoria = async function(id){
 
 /* DAQUI PRA BAIXO SÃO IMPLEMENTAÇÕES DIFERENTES */
 
-<<<<<<< HEAD
-//função para retornar os dados da tabela principal pelo id da tabela secundaria
-const selectDesafioByIdCategoria = async function(idCategoria){
-
-    try {
-        
-        //criando variável sql
-        let sql = `select   tbl_desafio.*
-                        from tbl_desafio
-                            inner join tbl_desafio_categoria
-                                on tbl_desafio.id = tbl_desafio_categoria.id_desafio
-                            inner join tbl_categoria
-                                on tbl_categoria.id = tbl_desafio_categoria.id_categoria
-                    where tbl_categoria.id = ${idCategoria};`
-
-        //executando no banco de dados
-        let result = await knexConex.raw(sql)
-
-        //validando retorno
-        if(Array.isArray(result)){ //vendo se é um array
-
-            return result[0] //retornando somente o que nós pedimos, sem expecificações da tabela
-        //se não for array ele cai aqui
-        }else{
-            return false
-        }
-    } catch (error) {
-        return false
-    }
-}
-
-//função para retornar os dados secundarios pelo id da tabela principal
-const selectCategoriaByIdDesafio = async function(idDesafio){
-
-    try {
-        
-        //criando variável sql
-        let sql = `select   tbl_categoria.*
-                        from tbl_desafio
-                            inner join tbl_desafio_categoria
-                                on tbl_desafio.id = tbl_desafio_categoria.id_desafio
-                            inner join tbl_categoria
-                                on tbl_categoria.id = tbl_desafio_categoria.id_categoria
-                    where tbl_desafio.id = ${idDesafio};`
-
-        //executando no banco de dados
-        let result = await knexConex.raw(sql)
-
-        //validando retorno
-        if(Array.isArray(result)){ //vendo se é um array
-
-            return result[0] //retornando somente o que nós pedimos, sem expecificações da tabela
-        //se não for array ele cai aqui
-        }else{
-            return false
-        }
-    } catch (error) {
-        return false
-    }
-}
-
-//função para excluir os dados filtrando pelo id da tabela principal, essa função será utilizada no update da tabela principal, pois precisa apagar pra depois inserir os novos dados relacionados
-=======
 //função para excluir os dados filtrando pelo id da tabela principal, usada no update/delete do desafio
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85
 const deleteCategoriaByIdDesafio = async function(idDesafio){
 
     try {
@@ -251,13 +187,6 @@ module.exports = {
     selectAllDesafioCategoria,
     selectByIdDesafioCategoria,
     deleteDesafioCategoria,
-<<<<<<< HEAD
-    selectDesafioByIdCategoria,
-    selectCategoriaByIdDesafio,
-    deleteCategoriaByIdDesafio
-}
-=======
     deleteCategoriaByIdDesafio,
     selectCategoriasByIdDesafio
 }
->>>>>>> 1b12f5829468006a4c9abd5ca3147bd62c9aee85

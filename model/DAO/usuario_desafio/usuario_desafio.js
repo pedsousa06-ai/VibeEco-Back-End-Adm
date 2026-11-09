@@ -29,23 +29,12 @@ const insertUsuarioDesafio = async function(usuarioDesafio){
                 data_conclusao
             )
             values (
-<<<<<<< HEAD
-                ${usuarioDesafio.idUsuario},
-                ${usuarioDesafio.idDesafio},
-                "${usuarioDesafio.status}",
-                "${usuarioDesafio.dataConclusao}"
-            );`
-
-=======
                 ${usuarioDesafio.id_usuario},
                 ${usuarioDesafio.id_desafio},
                 "${usuarioDesafio.status}",
                 "${usuarioDesafio.data_conclusao}"
             );`
 
-            console.log(sql)
-
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
         let result = await knexConex.raw(sql) 
 
         if(result)
@@ -54,10 +43,6 @@ const insertUsuarioDesafio = async function(usuarioDesafio){
             return false
         
     } catch (error) {
-<<<<<<< HEAD
-=======
-        console.log(error)
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
         return false
     }
 }
@@ -68,17 +53,10 @@ const updateUsuarioDesafio = async function(usuarioDesafio){
     try {
 
         let sql =   `update tbl_usuario_desafio set 
-<<<<<<< HEAD
-                        id_usuario      = ${usuarioDesafio.idUsuario},
-                        id_desafio      = ${usuarioDesafio.idDesafio},
-                        status          = "${usuarioDesafio.status}",
-                        data_conclusao  = "${usuarioDesafio.dataConclusao}"
-=======
                         id_usuario      = ${usuarioDesafio.id_usuario},
                         id_desafio      = ${usuarioDesafio.id_desafio},
                         status          = "${usuarioDesafio.status}",
                         data_conclusao  = "${usuarioDesafio.data_conclusao}"
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
 
                     where id = ${usuarioDesafio.id};`
 
@@ -146,8 +124,6 @@ const deleteUsuarioDesafio = async function(id){
         //criando variável sql
         let sql = `delete from tbl_usuario_desafio where id = ${id};`
 
-        console.log(sql)
-
         //enviando para o banco
         let result = await knexConex.raw(sql)
 
@@ -204,11 +180,7 @@ const selectDesafioByIdUsuario = async function(idUsuario){
         let sql = `select   tbl_desafio.*
                         from tbl_usuario
                             inner join tbl_usuario_desafio
-<<<<<<< HEAD
-                                on tbl_usuario.id = tbl_usuario_desafio.id_desafio
-=======
                                 on tbl_usuario.id = tbl_usuario_desafio.id_usuario
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                             inner join tbl_desafio
                                 on tbl_desafio.id = tbl_usuario_desafio.id_desafio
                     where tbl_usuario.id = ${idUsuario};`
@@ -235,8 +207,6 @@ const deleteDesafioByIdUsuario = async function(idUsuario){
     try {
 
         let sql = `delete from tbl_usuario_desafio where id_usuario = ${idUsuario};` //apagando pela chave estrangeira da tabela principal, para apagar todos os dados relacionados a ela
-
-        console.log(sql)
 
         let result = await knexConex.raw(sql)
 

@@ -55,6 +55,7 @@ const inserirNovoUsuarioPremiacao = async function(usuarioPremiacao){
         }
         
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
     }
 }
@@ -248,7 +249,7 @@ const validarDados = function(dados){
 
         }else if(dados.id_premiacao == undefined /*undefined sempre deve vir primeiro*/ || dados.id_premiacao == "" || dados.id_premiacao == null || isNaN(dados.id_premiacao)){
             //personalizando mensagem de erro
-            message.ERROR_BAD_REQUEST.field /*field = campo (local do erro)*/ = "O campo [ID_DESAFIO] está incorreto!"
+            message.ERROR_BAD_REQUEST.field /*field = campo (local do erro)*/ = "O campo [ID_PREMIACAO] está incorreto!"
             return message.ERROR_BAD_REQUEST
         //se estiver tudo certo ele cai aqui       
         }else{

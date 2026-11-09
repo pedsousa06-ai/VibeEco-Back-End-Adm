@@ -11,6 +11,7 @@ const config_message = require("../modulo/configMessages.js")
 //importando arquivo do DAO (MODEL)
 const usuarioDAO = require("../../model/DAO/usuario/usuario.js")
 const controlerUsuarioDesafio = require("./controller_usuario_desafio.js")
+const controlerUsuarioPremiacao = require("./controller_usuario_premiacao.js")
 const { json } = require("body-parser")
 const express = require("express")
 
@@ -77,6 +78,35 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
                                 return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
                             }
 
+                        }
+
+
+                        
+                        if(usuario.premiacao != undefined || usuario.premiacao != null || usuario.premiacao != ""){
+
+                            // Transforma a string em um array real
+                            const objetoPremiacao = JSON.parse(usuario.premiacao);
+
+                            usuario.premiacao = objetoPremiacao //substituindo a string do json por um array real
+                            
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(premiacao of usuario.premiacao){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let usuarioPremiacao = {
+                                    "id_usuario"    : usuario.id,
+                                    "id_premiacao"  : premiacao.id
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertUsuarioPremiacao = await controlerUsuarioPremiacao.inserirNovoUsuarioPremiacao(usuarioPremiacao)
+
+
+                                if(!resultInsertUsuarioPremiacao.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
+                            }
                         }
     
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
@@ -171,10 +201,45 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                                     let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
 
                                     if(!resultInsertUsuarioDesafio.status){
+                                        console.log("Erro ao inserir os dados relacionados a tabela intermediária(desafio)")
                                         return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
                                     }
                                 }
-                            }                            
+                            } 
+                            
+                            if(usuario.premiacao != undefined || usuario.premiacao != null || usuario.premiacao != ""){
+
+                                //Manipulação de dados na tabela de relação (tabela intermediária)
+                                let resultDeleteUsuarioPremiacao = await controlerUsuarioPremiacao.excluirPremiacaofioIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                                //após a exlusão de todos os dados relacionados
+                                if(resultDeleteUsuarioPremiacao.status){
+
+
+                                    // Transforma a string em um array real
+                                    const objetoPremiacao = JSON.parse(usuario.premiacao);
+
+                                    usuario.premiacao = objetoPremiacao //substituindo a string do json por um array real
+
+                                    //Manipulação de dados para inserir os Generos do Filme
+                                    for(premiacao of usuario.premiacao){ //estrutura para percorrer o array recebido na requisição no json 
+                                        
+                                        //cria um json com os ids, para mandar os dois juntos
+                                        let usuarioPremiacao = {
+                                            "id_usuario"    : usuario.id,
+                                            "id_premiacao"  : premiacao.id
+                                        }
+                                        
+                                        //enviando os ids para a controller da tabela intermediaria
+                                        let resultInsertUsuarioPremiacao = await controlerUsuarioPremiacao.inserirNovoUsuarioPremiacao(usuarioPremiacao)
+
+                                        if(!resultInsertUsuarioPremiacao.status){
+                                            console.log("Erro ao inserir os dados relacionados a tabela intermediária(premiação)")
+                                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                        }
+                                    }
+                                } 
+                            }
 
                             message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                             message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
@@ -230,6 +295,12 @@ const listarUsuario = async function(){
                     if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
+
+                    let resultUsuarioPremiacao = await controlerUsuarioPremiacao.buscarPremiacaoIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultUsuarioPremiacao.status){ //se o status for verdadeiro, ele continua o processo
+                        usuario.premiacao = resultUsuarioPremiacao.response.usuarioPremiacao //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
                 }
                 //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
@@ -283,6 +354,12 @@ const buscarUsuarioId = async function(id){
                         if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
                             usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //
                         }
+
+                        let resultUsuarioPremiacao = await controlerUsuarioPremiacao.buscarPremiacaoIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultUsuarioPremiacao.status){ //se o status for verdadeiro, ele continua o processo
+                            usuario.premiacao = resultUsuarioPremiacao.response.usuarioPremiacao //
+                        }
                     }
 
                     //editando cabeçalho
@@ -320,8 +397,13 @@ const excluirUsuario = async function(id){
             let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
             console.log(resultDeleteUsuarioDesafio)
 
-
             if(!resultDeleteUsuarioDesafio.status){
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+            let resultDeleteUsuarioPremiacao = await controlerUsuarioPremiacao.excluirPremiacaofioIdUsuario(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteUsuarioPremiacao.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
