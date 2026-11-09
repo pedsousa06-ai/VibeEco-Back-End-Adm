@@ -17,6 +17,9 @@ const express = require("express")
 // import da controller que faz upload da foto
 const UPLOAD = require("../upload/controller_upload_azure.js")
 
+// import do arquivo do JWT (JSON Web Token)
+const jwt = require("../../middleware/middlewareJWT.js")
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -50,6 +53,7 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
+<<<<<<< HEAD
                         console.log(usuario)
 
                         //Manipulação de dados para inserir na tabela intermediaria
@@ -60,6 +64,22 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
                             let usuarioDesafio = {
                                 "id_usuario": usuario.id,
                                 "id_desafio": desafio.id
+=======
+                        // Transforma a string em um array real
+                        const objetoDesafio = JSON.parse(usuario.desafio);
+
+                        usuario.desafio = objetoDesafio //substituindo a string do json por um array real
+
+                        //Manipulação de dados para inserir na tabela intermediaria
+                        for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json
+                        
+                            //cria um json com os ids, para mandar os dois juntos
+                            let usuarioDesafio = {
+                                "id_usuario"    : usuario.id,
+                                "id_desafio"    : desafio.id,
+                                "status"        : desafio.status,
+                                "data_conclusao": desafio.data_conclusao
+>>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                             }
 
                             //enviando os ids para a controller da tabela intermediaria
@@ -97,14 +117,13 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
         }
         
     } catch (error) {
-        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
     }
 
 }
 
 //função para atualizar um dado
-const atualizarUsuario= async function(id, contentType, usuario, foto){
+const atualizarUsuario = async function(id, contentType, usuario, foto){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
@@ -145,6 +164,7 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
                             //após a exlusão de todos os dados relacionados
                             if(resultDeleteUsuarioDesafio.status){
 
+<<<<<<< HEAD
                                 //Manipulação de dados para inserir os Generos do Filme
                                 for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
                         
@@ -152,6 +172,22 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
                                     let usuarioDesafio = {
                                         "id_usuario": usuario.id,
                                         "id_desafio": desafio.id
+=======
+                                // Transforma a string em um array real
+                                const objetoDesafio = JSON.parse(usuario.desafio);
+
+                                usuario.desafio = objetoDesafio //substituindo a string do json por um array real
+
+                                //Manipulação de dados para inserir os Generos do Filme
+                                for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
+                                    
+                                    //cria um json com os ids, para mandar os dois juntos
+                                    let usuarioDesafio = {
+                                        "id_usuario"    : usuario.id,
+                                        "id_desafio"    : desafio.id,
+                                        "status"        : desafio.status,
+                                        "data_conclusao": desafio.data_conclusao
+>>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                                     }
                                     
                                     //enviando os ids para a controller da tabela intermediaria
@@ -175,7 +211,6 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
 
 
                     }else{
-                        console.log("Erro ao enviar a foto")
                         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (erro no controller)
                     }
     
@@ -191,7 +226,6 @@ const atualizarUsuario= async function(id, contentType, usuario, foto){
         }
         
     } catch (error) {
-        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
@@ -216,10 +250,13 @@ const listarUsuario = async function(){
                     //cria o objeto relacionados 
                     let resultUsuarioDesafio = await controlerUsuarioDesafio.buscarDesafioIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
 
+<<<<<<< HEAD
                     
                     /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
                     //console.log(resultGenero)
 
+=======
+>>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                     if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
@@ -311,6 +348,11 @@ const excluirUsuario = async function(id){
 
             //excluindo relacionamento 
             let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
+<<<<<<< HEAD
+=======
+            console.log(resultDeleteUsuarioDesafio)
+
+>>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
 
             if(!resultDeleteUsuarioDesafio.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
@@ -333,6 +375,63 @@ const excluirUsuario = async function(id){
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
+}
+
+// função para validar email e senha do usuário
+const validarLogin = async function(login){
+
+    let message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+
+        //tratando id
+        //tratando o id, para não mandar conteúdos errados pro banco
+        if(login.email == undefined || login.email == "" || login.email == null || login.email.length > 255){
+
+            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
+            message.ERROR_BAD_REQUEST.field = "[EMAIL] INVALIDO"
+            return message.ERROR_BAD_REQUEST
+    
+        }else if(login.senha == undefined || login.senha == "" || login.senha == null || login.senha.length < 8 || login.senha.length > 25){
+
+            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
+            message.ERROR_BAD_REQUEST.field = "[SENHA] INVALIDO"
+            return message.ERROR_BAD_REQUEST
+    
+        }else{
+            
+            //enviando para o banco
+            let result = await usuarioDAO.validarLogin(login)
+
+            //tratando retorno
+            if(result){
+
+                //verificando tamanho do array de resposta
+                if(result.length > 0){
+
+                    // criando o token JWT com o id do usuario para mandar na resposta
+                    let tokenUsuario = await jwt.createJWT(result.id)
+
+                    // adicionando o token JTW no objeto de resposta
+                    result[0].token = tokenUsuario
+
+                    //editando cabeçalho
+                    message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
+                    message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
+                    message.DEFAULT_MESSAGE.response.usuario = result
+
+                    return message.DEFAULT_MESSAGE //200                 
+                }else{
+                    return message.ERROR_NOT_FOUND
+                }
+            }else{
+                return message.ERROR_INTERNAL_SERVER_MODEL
+            }
+        }
+        
+    } catch (error) {
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
 }
 
 //função para validar os dados recebidos na requição
@@ -365,11 +464,13 @@ const validarDadosUsuario = async function(dados){
     
 }
 
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     inserirNovaUsuario,
     atualizarUsuario,
     listarUsuario,
     buscarUsuarioId,
-    excluirUsuario
+    excluirUsuario,
+    validarLogin
 }

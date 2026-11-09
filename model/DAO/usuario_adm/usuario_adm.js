@@ -155,11 +155,36 @@ const deleteUsuarioADM = async function(id){
     }
 }
 
+//validar login do usuário
+const validarLogin = async function(login){
+
+    try {
+        
+        let sql = `select	tbl_usuario_adm.id, tbl_usuario_adm.email, tbl_usuario_adm.senha, 
+                            tbl_nivel_acesso.nivel as nivel_acesso
+                                from tbl_usuario_adm
+                                    inner join tbl_nivel_acesso
+                                        on tbl_usuario_adm.id_nivel_acesso = tbl_nivel_acesso.id
+                        where tbl_usuario_adm.email = "${login.email}" and tbl_usuario_adm.senha = "${login.senha}";`
+
+        let result = await knexConex.raw(sql)
+
+        if(Array.isArray(result)){
+            return result[0]
+        }else{
+            return false
+        }
+    } catch (error) {
+        return false
+    }
+}
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     insertUsuarioADM,
     updateUsuarioADM,
     selectAllUsuarioADM,
     selectByIdUsuarioADM,
-    deleteUsuarioADM
+    deleteUsuarioADM,
+    validarLogin
 }

@@ -11,6 +11,22 @@ const router = express.Router()
 //importando o arquivo da controller, para pode enviar os dados para serem processados
 const controllerUsuarioADM = require("../controller/usuario_adm/controller_usuario_adm.js")
 
+// função para receber o toke e validar o JWT
+const verifyJWT = async function(request, response, next){
+    
+    const jwt = require("../middleware/middlewareJWT.js") //importando o middleware para validar o token
+    
+    let token = request.headers["x-access-token"] //recebendo o token do cabeçalho da requisição
+
+    const autencidadeToken = await jwt.validarJWT(token) //validando o token
+
+    if(autencidadeToken){ //se o token for válido, chama a próxima função
+        next()
+    }else{ //se o token for inválido, retorna um erro
+        return response.status(401).end("Acesso negado! Token inválido ou expirado.")
+    }
+}
+
 
 /* CRUD DA TABELA */
 
@@ -38,6 +54,20 @@ router.get("/", async function(request, response){
     let result = await controllerUsuarioADM.listarUsuarioADM()
 
     //envia os dados recebidos
+    response.status(result.status_code)
+    response.json(result)
+})
+
+// validar login do usuário
+router.get("/login", bodyParserJSON, async function(request, response){
+
+    //recebendo id
+    let login = request.body
+
+    //chamando função da controller e enviando o id
+    let result = await controllerUsuarioADM.validarLogin(login)
+
+    //enviando resposta
     response.status(result.status_code)
     response.json(result)
 })

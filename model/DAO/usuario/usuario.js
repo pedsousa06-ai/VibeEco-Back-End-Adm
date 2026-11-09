@@ -66,7 +66,6 @@ const insertUsuario = async function(usuario){
         }
         
     } catch (error) {
-        console.log(error)
         return false
     }
 
@@ -147,7 +146,6 @@ const selectAllUsuario = async function(){
             return false
         }
     } catch (error) {
-        console.log(error)
         return false
     }
 }
@@ -202,6 +200,33 @@ const deleteUsuario = async function(id){
         }else{
             return false
         }
+
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+
+// validar login
+const validarLogin = async function(login){
+
+    try {
+        
+        let sql = `select	tbl_usuario.id, tbl_usuario.nome, tbl_usuario.email, tbl_usuario.senha, tbl_nivel_acesso.nivel as nivel_acesso
+                                from tbl_usuario
+                                    inner join tbl_nivel_acesso
+                                        on tbl_usuario.id_nivel_acesso = tbl_nivel_acesso.id
+                        where tbl_usuario.email = "${login.email}" and tbl_usuario.senha = "${login.senha}";`
+
+
+        let result = await knexConex.raw(sql)
+
+        if(Array.isArray(result)){
+            return result[0]
+        }else{
+            return false
+        }
+
     } catch (error) {
         return false
     }
@@ -213,5 +238,6 @@ module.exports = {
     updateUsuario,
     selectAllUsuario,
     selectByIdUsuario,
-    deleteUsuario
+    deleteUsuario,
+    validarLogin
 }

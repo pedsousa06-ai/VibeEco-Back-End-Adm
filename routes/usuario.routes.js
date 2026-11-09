@@ -22,6 +22,22 @@ const storage       = multer.diskStorage({ //criando um objeto para manipular o 
 
 const upload = multer() // criando um objeto para manipular o multer
 
+// função para receber o toke e validar o JWT
+const verifyJWT = async function(request, response, next){
+    
+    const jwt = require("../middleware/middlewareJWT.js") //importando o middleware para validar o token
+    
+    let token = request.headers["x-access-token"] //recebendo o token do cabeçalho da requisição
+
+    const autencidadeToken = await jwt.validarJWT(token) //validando o token
+
+    if(autencidadeToken){ //se o token for válido, chama a próxima função
+        next()
+    }else{ //se o token for inválido, retorna um erro
+        return response.status(401).end("Acesso negado! Token inválido ou expirado.")
+    }
+}
+
 
 /* CRUD DA TABELA */
 
@@ -51,6 +67,20 @@ router.get("/", async function(request, response){
     let result = await controllerUsuario.listarUsuario()
 
     //envia os dados recebidos
+    response.status(result.status_code)
+    response.json(result)
+})
+
+// validar login do usuário
+router.get("/login", bodyParserJSON, async function(request, response){
+
+    //recebendo id
+    let login = request.body
+
+    //chamando função da controller e enviando o id
+    let result = await controllerUsuario.validarLogin(login)
+
+    //enviando resposta
     response.status(result.status_code)
     response.json(result)
 })
