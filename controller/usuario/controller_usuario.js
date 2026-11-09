@@ -53,18 +53,6 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
-<<<<<<< HEAD
-                        console.log(usuario)
-
-                        //Manipulação de dados para inserir na tabela intermediaria
-                        for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json
-
-                        
-                            //cria um json com os ids, para mandar os dois juntos
-                            let usuarioDesafio = {
-                                "id_usuario": usuario.id,
-                                "id_desafio": desafio.id
-=======
                         // Transforma a string em um array real
                         const objetoDesafio = JSON.parse(usuario.desafio);
 
@@ -79,7 +67,6 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
                                 "id_desafio"    : desafio.id,
                                 "status"        : desafio.status,
                                 "data_conclusao": desafio.data_conclusao
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                             }
 
                             //enviando os ids para a controller da tabela intermediaria
@@ -164,15 +151,6 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                             //após a exlusão de todos os dados relacionados
                             if(resultDeleteUsuarioDesafio.status){
 
-<<<<<<< HEAD
-                                //Manipulação de dados para inserir os Generos do Filme
-                                for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
-                        
-                                    //cria um json com os ids para mandar os dois juntos
-                                    let usuarioDesafio = {
-                                        "id_usuario": usuario.id,
-                                        "id_desafio": desafio.id
-=======
                                 // Transforma a string em um array real
                                 const objetoDesafio = JSON.parse(usuario.desafio);
 
@@ -187,7 +165,6 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                                         "id_desafio"    : desafio.id,
                                         "status"        : desafio.status,
                                         "data_conclusao": desafio.data_conclusao
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                                     }
                                     
                                     //enviando os ids para a controller da tabela intermediaria
@@ -250,13 +227,6 @@ const listarUsuario = async function(){
                     //cria o objeto relacionados 
                     let resultUsuarioDesafio = await controlerUsuarioDesafio.buscarDesafioIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
 
-<<<<<<< HEAD
-                    
-                    /* SE NÃO DER CERTO FAZ UM CONSOLE NO resultGenero PARA ACHAR O ERRO */
-                    //console.log(resultGenero)
-
-=======
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
                     if(resultUsuarioDesafio.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
@@ -348,11 +318,8 @@ const excluirUsuario = async function(id){
 
             //excluindo relacionamento 
             let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
-<<<<<<< HEAD
-=======
             console.log(resultDeleteUsuarioDesafio)
 
->>>>>>> ed866ab41e323ba36deab4dec8fec8a436ccd8ab
 
             if(!resultDeleteUsuarioDesafio.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
