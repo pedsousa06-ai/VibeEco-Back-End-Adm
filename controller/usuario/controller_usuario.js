@@ -12,6 +12,9 @@ const config_message = require("../modulo/configMessages.js")
 const usuarioDAO = require("../../model/DAO/usuario/usuario.js")
 const controlerUsuarioDesafio = require("./controller_usuario_desafio.js")
 const controlerUsuarioPremiacao = require("./controller_usuario_premiacao.js")
+const controlerUsuarioConquista = require("./controller_usuario_conquista.js")
+
+
 const { json } = require("body-parser")
 const express = require("express")
 
@@ -108,6 +111,35 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
                             }
                         }
+
+
+                        if(usuario.conquista != undefined || usuario.conquista != null || usuario.conquista != ""){
+
+                            // Transforma a string em um array real
+                            const objetoConquista = JSON.parse(usuario.conquista);
+
+                            usuario.conquista = objetoConquista //substituindo a string do json por um array real
+                            
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(conquista of usuario.conquista){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let usuarioConquista = {
+                                    "id_usuario"        : usuario.id,
+                                    "id_conquista"      : conquista.id,
+                                    "data_conquista"    : conquista.data_conquista
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertUsuarioConquista = await controlerUsuarioConquista.inserirNovoUsuarioConquista(usuarioConquista)
+
+
+                                if(!resultInsertUsuarioConquista.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
+                            }
+                        }
     
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
     
@@ -134,6 +166,7 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
         }
         
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
     }
 
@@ -241,6 +274,42 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                                 } 
                             }
 
+
+                            if(usuario.conquista != undefined || usuario.conquista != null || usuario.conquista != ""){
+
+                                //Manipulação de dados na tabela de relação (tabela intermediária)
+                                let resultDeleteUsuarioConquista = await controlerUsuarioConquista.excluirConquistaIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                                //após a exlusão de todos os dados relacionados
+                                if(resultDeleteUsuarioConquista.status){
+
+
+                                    // Transforma a string em um array real
+                                    const objetoConquista = JSON.parse(usuario.conquista);
+
+                                    usuario.conquista = objetoConquista //substituindo a string do json por um array real
+
+                                    //Manipulação de dados para inserir os Generos do Filme
+                                    for(conquista of usuario.conquista){ //estrutura para percorrer o array recebido na requisição no json 
+                                        
+                                        //cria um json com os ids, para mandar os dois juntos
+                                        let usuarioConquista = {
+                                            "id_usuario"        : usuario.id,
+                                            "id_conquista"      : conquista.id,
+                                            "data_conquista"    : conquista.data_conquista
+                                        }
+                                        
+                                        //enviando os ids para a controller da tabela intermediaria
+                                        let resultInsertUsuarioConquista = await controlerUsuarioConquista.inserirNovoUsuarioConquista(usuarioConquista)
+
+                                        if(!resultInsertUsuarioConquista.status){
+                                            console.log("Erro ao inserir os dados relacionados a tabela intermediária(conquista)")
+                                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                        }
+                                    }
+                                } 
+                            }
+
                             message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                             message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                             message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
@@ -296,10 +365,20 @@ const listarUsuario = async function(){
                         usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
 
+
+
                     let resultUsuarioPremiacao = await controlerUsuarioPremiacao.buscarPremiacaoIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
 
                     if(resultUsuarioPremiacao.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.premiacao = resultUsuarioPremiacao.response.usuarioPremiacao //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
+
+
+                    let resultUsuarioConquista = await controlerUsuarioConquista.buscarConquistaIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultUsuarioConquista.status){ //se o status for verdadeiro, ele continua o processo
+                        usuario.conquista = resultUsuarioConquista.response.usuarioConquista //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
                 }
                 //personalizando o cabeçalho com a mensagem de sucesso
@@ -355,10 +434,20 @@ const buscarUsuarioId = async function(id){
                             usuario.desafio = resultUsuarioDesafio.response.usuarioDesafio //
                         }
 
+
+
                         let resultUsuarioPremiacao = await controlerUsuarioPremiacao.buscarPremiacaoIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
 
                         if(resultUsuarioPremiacao.status){ //se o status for verdadeiro, ele continua o processo
                             usuario.premiacao = resultUsuarioPremiacao.response.usuarioPremiacao //
+                        }
+
+
+
+                        let resultUsuarioConquista = await controlerUsuarioConquista.buscarConquistaIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultUsuarioConquista.status){ //se o status for verdadeiro, ele continua o processo
+                            usuario.conquista = resultUsuarioConquista.response.usuarioConquista //
                         }
                     }
 
@@ -401,9 +490,19 @@ const excluirUsuario = async function(id){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
+
+
             let resultDeleteUsuarioPremiacao = await controlerUsuarioPremiacao.excluirPremiacaofioIdUsuario(id) //exclui os dados relacionados a ele
 
             if(!resultDeleteUsuarioPremiacao.status){
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+
+
+            let resultDeleteUsuarioConquista = await controlerUsuarioConquista.excluirConquistaIdUsuario(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteUsuarioConquista.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
