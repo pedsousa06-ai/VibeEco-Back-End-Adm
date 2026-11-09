@@ -134,7 +134,7 @@ const listarUsuarioConquista = async function(){
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status // True or False
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code // 200
                 message.DEFAULT_MESSAGE.response.count = result.length // Mostra a quantidade de itens
-                message.DEFAULT_MESSAGE.response.updateUsuarioConquista = result // Mostra os itens
+                message.DEFAULT_MESSAGE.response.usuarioConquista = result // Mostra os itens
 
                 return message.DEFAULT_MESSAGE // retorna as mensagens e os dados
 
@@ -181,7 +181,7 @@ const buscarUsuarioConquistaID = async function(id){
 
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status //true / false
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code //200
-                    message.DEFAULT_MESSAGE.response.updateUsuarioConquista = result //conteúdo
+                    message.DEFAULT_MESSAGE.response.usuarioConquista = result //conteúdo
 
                     return message.DEFAULT_MESSAGE //retornando dados
 
