@@ -13,6 +13,7 @@ const usuarioDAO = require("../../model/DAO/usuario/usuario.js")
 const controlerUsuarioDesafio = require("./controller_usuario_desafio.js")
 const controlerUsuarioPremiacao = require("./controller_usuario_premiacao.js")
 const controlerUsuarioConquista = require("./controller_usuario_conquista.js")
+const controlerUsuarioRecompensa = require("./controller_usuario_recompensa.js")
 
 
 const { json } = require("body-parser")
@@ -135,6 +136,46 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
 
                                 if(!resultInsertUsuarioConquista.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
+                            }
+                        }
+
+
+                        if(usuario.recompensa != undefined || usuario.recompensa != null || usuario.recompensa != ""){
+
+                            // Transforma a string em um array real
+                            const objetoRecompensa = JSON.parse(usuario.recompensa);
+
+                            usuario.recompensa = objetoRecompensa //substituindo a string do json por um array real
+
+
+                            let codigo_resgate = ""
+                
+                            // gerando um codigo de rastreio aleatório de 20 caracteres (letras maiúsculas e números)
+                            for(let i = 0; i < 20; i++) {
+                                const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+                                codigo_resgate += caracteres.charAt(indiceAleatorio);
+                            }
+                            
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(recompensa of usuario.recompensa){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let usuarioRecompensa = {
+                                    "id_usuario"        : usuario.id,
+                                    "id_recompensa"     : recompensa.id,
+                                    "data_resgate"      : recompensa.data_resgate,
+                                    "codigo_resgate"    : codigo_resgate
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertUsuarioRecompensa = await controlerUsuarioRecompensa.inserirNovoUsuarioRecompensa(usuarioRecompensa)
+
+
+                                if(!resultInsertUsuarioRecompensa.status){
                                     return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
                                 }
 
@@ -310,6 +351,52 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                                 } 
                             }
 
+
+                            if(usuario.recompensa != undefined || usuario.recompensa != null || usuario.recompensa != ""){
+
+                                //Manipulação de dados na tabela de relação (tabela intermediária)
+                                let resultDeleteUsuarioRecompensa = await controlerUsuarioRecompensa.excluirRecompensaIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                                //após a exlusão de todos os dados relacionados
+                                if(resultDeleteUsuarioRecompensa.status){
+
+
+                                    // Transforma a string em um array real
+                                    const objetoRecompensa = JSON.parse(usuario.recompensa);
+
+                                    usuario.recompensa = objetoRecompensa //substituindo a string do json por um array real
+
+                                    let codigo_resgate = ""
+                
+                                    // gerando um codigo de rastreio aleatório de 20 caracteres (letras maiúsculas e números)
+                                    for(let i = 0; i < 20; i++) {
+                                        const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                        const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+                                        codigo_resgate += caracteres.charAt(indiceAleatorio);
+                                    }
+
+                                    //Manipulação de dados para inserir os Generos do Filme
+                                    for(recompensa of usuario.recompensa){ //estrutura para percorrer o array recebido na requisição no json 
+                                        
+                                        //cria um json com os ids, para mandar os dois juntos
+                                        let usuarioRecompensa = {
+                                            "id_usuario"        : usuario.id,
+                                            "id_recompensa"     : recompensa.id,
+                                            "data_resgate"      : recompensa.data_resgate,
+                                            "codigo_resgate"    : codigo_resgate
+                                        }
+                                        
+                                        //enviando os ids para a controller da tabela intermediaria
+                                        let resultInsertUsuarioRecompensa = await controlerUsuarioRecompensa.inserirNovoUsuarioRecompensa(usuarioRecompensa)
+
+                                        if(!resultInsertUsuarioRecompensa.status){
+                                            console.log("Erro ao inserir os dados relacionados a tabela intermediária(conquista)")
+                                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                        }
+                                    }
+                                } 
+                            }
+
                             message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                             message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                             message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
@@ -337,6 +424,7 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
         }
         
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
@@ -380,7 +468,19 @@ const listarUsuario = async function(){
                     if(resultUsuarioConquista.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.conquista = resultUsuarioConquista.response.usuarioConquista //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
+
+
+
+                    let resultUsuarioRecompensa = await controlerUsuarioRecompensa.buscarRecompensaIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultUsuarioRecompensa.status){ //se o status for verdadeiro, ele continua o processo
+                        usuario.recompensa = resultUsuarioRecompensa.response.usuarioRecompensa //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
+
                 }
+
+
                 //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
@@ -449,6 +549,14 @@ const buscarUsuarioId = async function(id){
                         if(resultUsuarioConquista.status){ //se o status for verdadeiro, ele continua o processo
                             usuario.conquista = resultUsuarioConquista.response.usuarioConquista //
                         }
+
+
+
+                        let resultUsuarioRecompensa = await controlerUsuarioRecompensa.buscarRecompensaIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultUsuarioRecompensa.status){ //se o status for verdadeiro, ele continua o processo
+                            usuario.recompensa = resultUsuarioRecompensa.response.usuarioRecompensa //
+                        }
                     }
 
                     //editando cabeçalho
@@ -505,6 +613,16 @@ const excluirUsuario = async function(id){
             if(!resultDeleteUsuarioConquista.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
+
+
+
+            let resultDeleteUsuarioRecompensa = await controlerUsuarioRecompensa.excluirRecompensaIdUsuario(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteUsuarioRecompensa.status){
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+
 
             //mandadno para o banco
             let result = await usuarioDAO.deleteUsuario(id)
