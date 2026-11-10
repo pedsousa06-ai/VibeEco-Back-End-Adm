@@ -731,15 +731,14 @@ const validarDadosUsuario = async function(dados){
 }
 
 //funcao para recuperar a senha do usuario
-const recuperarSenhaUsuario = async function(contentType, usuario){
+const recuperarAcessoUsuario = async function(contentType, usuario){
 
     try {
 
         let message = JSON.parse(JSON.stringify(config_message))
 
+        console.log(usuario)
 
-
-        
     } catch (error) {
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
@@ -802,6 +801,6 @@ module.exports = {
     buscarUsuarioId,
     excluirUsuario,
     validarLogin,
-    recuperarSenhaUsuario,
+    recuperarAcessoUsuario,
     redefinirSenhaUsuario
 }

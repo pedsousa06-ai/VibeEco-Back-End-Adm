@@ -72,7 +72,7 @@ router.get("/", async function(request, response){
 })
 
 //recuperar senha
-router.get("/recuperarSenha", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, async function(request, response){
+router.get("/recuperarAcesso", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, async function(request, response){
     
     //recebendo dados da requisição
     let dados = request.body
@@ -81,7 +81,7 @@ router.get("/recuperarSenha", bodyParserJSON /*serve para captar o conteúdo env
     let contentType = request.headers["content-type"]
 
     //enviando para a controller
-    let result = await controllerUsuario.recuperarSenhaUsuario(contentType, dados)
+    let result = await controllerUsuario.recuperarAcessoUsuario(contentType, dados)
 
     //enviando resposta da requisição
     response.status(result.status_code)
