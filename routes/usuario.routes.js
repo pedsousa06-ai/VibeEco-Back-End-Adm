@@ -71,6 +71,23 @@ router.get("/", async function(request, response){
     response.json(result)
 })
 
+//recuperar senha
+router.get("/recuperarSenha", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, async function(request, response){
+    
+    //recebendo dados da requisição
+    let dados = request.body
+
+    //verificando content-type
+    let contentType = request.headers["content-type"]
+
+    //enviando para a controller
+    let result = await controllerUsuario.recuperarSenhaUsuario(contentType, dados)
+
+    //enviando resposta da requisição
+    response.status(result.status_code)
+    response.json(result)
+})
+
 // validar login do usuário
 router.get("/login", bodyParserJSON, async function(request, response){
 
@@ -95,6 +112,22 @@ router.get("/:id", async function(request, response){
     let result = await controllerUsuario.buscarUsuarioId(id)
 
     //enviando resposta
+    response.status(result.status_code)
+    response.json(result)
+})
+
+//redefinir senha
+router.put("/redefinirSenha/:id", bodyParserJSON, async function(request, response){
+
+    //recebendo o id e o conteúdo para serem enviados
+    let id = request.params.id
+    let dados = request.body
+    let contentType = request.headers['content-type']
+
+    //enviando os dados para controller
+    let result = await controllerUsuario.redefinirSenhaUsuario(id, contentType, dados)
+
+    //enviando para o usuário
     response.status(result.status_code)
     response.json(result)
 })

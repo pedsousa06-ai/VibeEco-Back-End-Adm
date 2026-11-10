@@ -730,6 +730,69 @@ const validarDadosUsuario = async function(dados){
     
 }
 
+//funcao para recuperar a senha do usuario
+const recuperarSenhaUsuario = async function(contentType, usuario){
+
+    try {
+
+        let message = JSON.parse(JSON.stringify(config_message))
+
+
+
+        
+    } catch (error) {
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
+
+}
+
+//funcao para redefinir a senha
+const redefinirSenhaUsuario = async function(id, contentType, usuario){
+
+    let message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+        //verificando existencia do id
+        let validarId = await buscarUsuarioId(id)
+
+
+        if(validarId.status){
+
+            //verificando tipo de dados
+            if(contentType){
+
+                //se estiver tudo certo ele adiciona o id no objeto
+                usuario.id = Number(id)
+
+                //enviando para o banco 
+                let result = await usuarioDAO.updateSenhaUsuario(usuario)
+
+                if(result){
+
+                    message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
+                    message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
+                    message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
+                    message.DEFAULT_MESSAGE.response = usuario //envia os dados no response, para o usuário visualizar
+
+                    return message.DEFAULT_MESSAGE //200
+                }else{
+                    return message.ERROR_INTERNAL_SERVER_MODEL
+                }
+
+            }else{
+                return message.ERROR_CONTENT_TYPE
+            }
+
+        }else{
+            return validarId
+        }
+        
+    } catch (error) {
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
+
+}
+
 
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
@@ -738,5 +801,7 @@ module.exports = {
     listarUsuario,
     buscarUsuarioId,
     excluirUsuario,
-    validarLogin
+    validarLogin,
+    recuperarSenhaUsuario,
+    redefinirSenhaUsuario
 }
