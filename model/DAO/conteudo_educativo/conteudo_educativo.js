@@ -79,12 +79,13 @@ const insertConteudoEducativo = async function(conteudoEducativo){
         return await knexConex.transaction(async (trx) => {
 
             let result = await trx.raw(
-                `insert into tbl_conteudo_educativo (nome, descricao, img, duracao_leitura) values (?, ?, ?, ?);`,
+                `insert into tbl_conteudo_educativo (nome, descricao, img, duracao_leitura, qtde_xp) values (?, ?, ?, ?, ?);`,
                 [
                     conteudoEducativo.nome,
                     conteudoEducativo.descricao ?? null,
                     conteudoEducativo.img ?? "",
-                    conteudoEducativo.duracao_leitura
+                    conteudoEducativo.duracao_leitura,
+                    conteudoEducativo.qtde_xp
                 ]
             )
 

@@ -733,11 +733,24 @@ const validarDadosUsuario = async function(dados){
 //funcao para recuperar a senha do usuario
 const recuperarAcessoUsuario = async function(contentType, usuario){
 
+    let message = JSON.parse(JSON.stringify(config_message))
+
     try {
 
-        let message = JSON.parse(JSON.stringify(config_message))
-
         console.log(usuario)
+
+        let codigo_redefinicao = ""
+                
+        // gerando um codigo de rastreio aleatório de 20 caracteres (letras maiúsculas e números)
+        for(let i = 0; i < 6; i++) {
+            const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+            codigo_redefinicao += caracteres.charAt(indiceAleatorio);
+        }
+
+        console.log(codigo_redefinicao)
+
+        // Vai receber o o email do usuario e retornar um código para o front + uma mensagem no email do usuario
 
     } catch (error) {
         return message.ERROR_INTERNAL_SERVER_CONTROLLER

@@ -19,7 +19,7 @@ const UPLOAD = require("../upload/controller_upload_azure.js")
 /* REGRAS DE UPLOAD (as mesmas do front) */
 const IMAGEM_TIPOS = ["image/png", "image/jpeg", "image/webp"]
 const IMAGEM_MAX = 5 * 1024 * 1024
-const ANEXO_EXTENSOES = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".zip"]
+const ANEXO_EXTENSOES = [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".zip", ".png", ".jpg", ".jpeg"]
 const ANEXO_MAX = 10 * 1024 * 1024
 const ANEXOS_LIMITE = 5
 
@@ -178,8 +178,11 @@ const inserirNovaConteudoEducativo = async function(contentType, dados, arquivos
             duracao_leitura: Number(dados.duracao_leitura),
             img: envio.img,
             categoria: categorias,
-            anexos: envio.anexos
+            anexos: envio.anexos,
+            qtde_xp: dados.qtde_xp
         }
+
+        console.log(conteudoEducativo)
 
         //mandando pro banco (conteúdo + categorias + anexos, tudo ou nada)
         let result = await conteudoEducativoDAO.insertConteudoEducativo(conteudoEducativo)
