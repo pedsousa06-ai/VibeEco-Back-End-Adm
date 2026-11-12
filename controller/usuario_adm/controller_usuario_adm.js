@@ -13,6 +13,12 @@ const usuarioADMDAO = require("../../model/DAO/usuario_adm/usuario_adm.js")
 const { json } = require("body-parser")
 const express = require("express")
 
+// import do arquivo do JWT (JSON Web Token)
+const jwt = require("../../middleware/middlewareJWT.js")
+
+// Importando o arquivo de serviço de envio de e-mails
+const arquivoEmail  = require("../../service/email.js");
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -255,6 +261,12 @@ const validarLogin = async function(login){
                 //verificando tamanho do array de resposta
                 if(result.length > 0){
 
+                        // criando o token JWT com o id do usuario para mandar na resposta
+                        let tokenUsuario = await jwt.createJWT(result.id)
+    
+                        // adicionando o token JTW no objeto de resposta
+                        result[0].token = tokenUsuario
+
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
@@ -304,6 +316,102 @@ const validarUsuarioADM = async function(dados){
     
 }
 
+//funcao para recuperar a senha do usuarioADM
+const recuperarAcessoUsuarioADM = async function(contentType, emailUsuario){
+
+    let message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+
+        // variavel para guardar o codigo de redefinição
+        let codigo_redefinicao = ""
+                
+        // gerando um codigo de aleatório de 6 caracteres (letras maiúsculas e números)
+        for(let i = 0; i < 6; i++) {
+            const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
+            codigo_redefinicao += caracteres.charAt(indiceAleatorio);
+        }
+
+        // variavel para guardar o assunto do email
+        let assunto = "Recuperação de senha - VibeEco"
+
+        // enviando o email para o usuário
+        const resultadoEnvio = await arquivoEmail.enviarEmail(emailUsuario.email, assunto, codigo_redefinicao)
+
+        // montando o objeto de resposta
+        //enviando para o banco 
+        let objetoResposta = {
+            "email" : emailUsuario.email,
+            "codigo_redefinicao" : codigo_redefinicao
+        }
+
+        if(resultadoEnvio){
+            message.DEFAULT_MESSAGE.status = message.SUCCESS_EMAIL_SENT.status
+            message.DEFAULT_MESSAGE.status_code = message.SUCCESS_EMAIL_SENT.status_code
+            message.DEFAULT_MESSAGE.message = message.SUCCESS_EMAIL_SENT.message
+            message.DEFAULT_MESSAGE.response = objetoResposta
+
+            return message.DEFAULT_MESSAGE //200
+        }else{
+            return message.ERROR_EMAIL_SEND //500 (erro ao enviar o email)
+        }
+
+
+    } catch (error) {
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
+
+}
+
+//funcao para redefinir a senha
+const redefinirSenhaUsuarioADM = async function(id, contentType, usuario){
+
+    let message = JSON.parse(JSON.stringify(config_message))
+
+    try {
+        //verificando existencia do id
+        let validarId = await buscarUsuarioId(id)
+
+
+        if(validarId.status){
+
+            //verificando tipo de dados
+            if(contentType){
+
+                //se estiver tudo certo ele adiciona o id no objeto
+                usuario.id = Number(id)
+
+                //enviando para o banco 
+                let result = await usuarioADMDAO.updateSenhaUsuarioADM(usuario)
+
+                if(result){
+
+                    message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
+                    message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
+                    message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
+                    message.DEFAULT_MESSAGE.response = usuario //envia os dados no response, para o usuário visualizar
+
+                    return message.DEFAULT_MESSAGE //200
+                }else{
+                    return message.ERROR_INTERNAL_SERVER_MODEL
+                }
+
+            }else{
+                return message.ERROR_CONTENT_TYPE
+            }
+
+        }else{
+            return validarId
+        }
+        
+    } catch (error) {
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
+
+}
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     inserirNovaUsuarioADM,
@@ -311,5 +419,7 @@ module.exports = {
     listarUsuarioADM,
     buscarUsuarioADMId,
     excluirUsuarioADM,
-    validarLogin
+    validarLogin,
+    recuperarAcessoUsuarioADM,
+    redefinirSenhaUsuarioADM
 }

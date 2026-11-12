@@ -179,6 +179,32 @@ const validarLogin = async function(login){
     }
 }
 
+//redefinir a senha do usuario
+const updateSenhaUsuarioADM = async function(senha){
+
+    try {
+
+        //criando variável sql
+        let sql =  `UPDATE tbl_usuario_adm
+            SET senha = '${senha.senha}'
+            WHERE id = ${senha.id};`
+
+
+        let result = await knexConex.raw(sql)
+
+        //validando retorno
+        if(result){
+            return true
+        }else{
+            return false
+        }
+        
+    } catch (error) {
+        return false
+    }
+
+}
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     insertUsuarioADM,
@@ -186,5 +212,6 @@ module.exports = {
     selectAllUsuarioADM,
     selectByIdUsuarioADM,
     deleteUsuarioADM,
-    validarLogin
+    validarLogin,
+    updateSenhaUsuarioADM
 }
