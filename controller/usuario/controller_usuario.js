@@ -14,6 +14,7 @@ const controlerUsuarioDesafio = require("./controller_usuario_desafio.js")
 const controlerUsuarioPremiacao = require("./controller_usuario_premiacao.js")
 const controlerUsuarioConquista = require("./controller_usuario_conquista.js")
 const controlerUsuarioRecompensa = require("./controller_usuario_recompensa.js")
+const controlerUsuarioMissao = require("./controller_usuario_missao.js")
 
 
 const { json } = require("body-parser")
@@ -61,31 +62,68 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
                         usuario.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
-                        // Transforma a string em um array real
-                        const objetoDesafio = JSON.parse(usuario.desafio);
+                        if (usuario.desafio != undefined || usuario.desafio != null || usuario.desafio != ""){
 
-                        usuario.desafio = objetoDesafio //substituindo a string do json por um array real
+                            // Transforma a string em um array real
+                            const objetoDesafio = JSON.parse(usuario.desafio);
 
-                        //Manipulação de dados para inserir na tabela intermediaria
-                        for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json
-                        
-                            //cria um json com os ids, para mandar os dois juntos
-                            let usuarioDesafio = {
-                                "id_usuario"    : usuario.id,
-                                "id_desafio"    : desafio.id,
-                                "status"        : desafio.status,
-                                "data_conclusao": desafio.data_conclusao
-                            }
+                            usuario.desafio = objetoDesafio //substituindo a string do json por um array real
 
-                            //enviando os ids para a controller da tabela intermediaria
-                            let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let usuarioDesafio = {
+                                    "id_usuario"    : usuario.id,
+                                    "id_desafio"    : desafio.id,
+                                    "status"        : desafio.status,
+                                    "data_conclusao": desafio.data_conclusao
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
 
 
-                            if(!resultInsertUsuarioDesafio.status){
-                                return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                if(!resultInsertUsuarioDesafio.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
                             }
 
                         }
+
+
+
+                        if (usuario.missao != undefined || usuario.missao != null || usuario.missao != ""){
+
+                            // Transforma a string em um array real
+                            const objetoMissao = JSON.parse(usuario.missao);
+
+                            usuario.missao = objetoMissao //substituindo a string do json por um array real
+
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(missao of usuario.missao){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let usuarioMissao = {
+                                    "id_usuario"    : usuario.id,
+                                    "id_missao"     : missao.id,
+                                    "status"        : missao.status,
+                                    "data_conclusao": missao.data_conclusao
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertUsuarioMissao = await controlerUsuarioMissao.inserirNovoUsuarioMissao(usuarioMissao)
+
+
+                                if(!resultInsertUsuarioMissao.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
+                            }
+
+                        }
+
 
 
                         
@@ -252,37 +290,79 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
 
                         if(result){
 
-                            //Manipulação de dados na tabela de relação (tabela intermediária)
-                            let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
 
-                            //após a exlusão de todos os dados relacionados
-                            if(resultDeleteUsuarioDesafio.status){
 
-                                // Transforma a string em um array real
-                                const objetoDesafio = JSON.parse(usuario.desafio);
+                            if(usuario.desafio != undefined || usuario.desafio != null || usuario.desafio != ""){
+                                //Manipulação de dados na tabela de relação (tabela intermediária)
+                                let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
 
-                                usuario.desafio = objetoDesafio //substituindo a string do json por um array real
+                                //após a exlusão de todos os dados relacionados
+                                if(resultDeleteUsuarioDesafio.status){
 
-                                //Manipulação de dados para inserir os Generos do Filme
-                                for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
-                                    
-                                    //cria um json com os ids, para mandar os dois juntos
-                                    let usuarioDesafio = {
-                                        "id_usuario"    : usuario.id,
-                                        "id_desafio"    : desafio.id,
-                                        "status"        : desafio.status,
-                                        "data_conclusao": desafio.data_conclusao
+                                    // Transforma a string em um array real
+                                    const objetoDesafio = JSON.parse(usuario.desafio);
+
+                                    usuario.desafio = objetoDesafio //substituindo a string do json por um array real
+
+                                    //Manipulação de dados para inserir os Generos do Filme
+                                    for(desafio of usuario.desafio){ //estrutura para percorrer o array recebido na requisição no json 
+                                        
+                                        //cria um json com os ids, para mandar os dois juntos
+                                        let usuarioDesafio = {
+                                            "id_usuario"    : usuario.id,
+                                            "id_desafio"    : desafio.id,
+                                            "status"        : desafio.status,
+                                            "data_conclusao": desafio.data_conclusao
+                                        }
+                                        
+                                        //enviando os ids para a controller da tabela intermediaria
+                                        let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
+
+                                        if(!resultInsertUsuarioDesafio.status){
+                                            console.log("Erro ao inserir os dados relacionados a tabela intermediária(desafio)")
+                                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                        }
                                     }
-                                    
-                                    //enviando os ids para a controller da tabela intermediaria
-                                    let resultInsertUsuarioDesafio = await controlerUsuarioDesafio.inserirNovoUsuarioDesafio(usuarioDesafio)
+                                } 
+                            }
 
-                                    if(!resultInsertUsuarioDesafio.status){
-                                        console.log("Erro ao inserir os dados relacionados a tabela intermediária(desafio)")
-                                        return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+
+
+                            if(usuario.missao != undefined || usuario.missao != null || usuario.missao != ""){
+                                //Manipulação de dados na tabela de relação (tabela intermediária)
+                                let resultDeleteUsuarioMissao = await controlerUsuarioMissao.excluirMissaoIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                                //após a exlusão de todos os dados relacionados
+                                if(resultDeleteUsuarioMissao.status){
+
+                                    // Transforma a string em um array real
+                                    const objetoMissao = JSON.parse(usuario.missao);
+
+                                    usuario.missao = objetoMissao //substituindo a string do json por um array real
+
+                                    //Manipulação de dados para inserir os Generos do Filme
+                                    for(missao of usuario.missao){ //estrutura para percorrer o array recebido na requisição no json 
+                                        
+                                        //cria um json com os ids, para mandar os dois juntos
+                                        let usuarioMissao = {
+                                            "id_usuario"    : usuario.id,
+                                            "id_missao"    : missao.id,
+                                            "status"        : missao.status,
+                                            "data_conclusao": missao.data_conclusao
+                                        }
+                                        
+                                        //enviando os ids para a controller da tabela intermediaria
+                                        let resultInsertUsuarioMissao = await controlerUsuarioMissao.inserirNovoUsuarioMissao(usuarioMissao)
+
+                                        if(!resultInsertUsuarioMissao.status){
+                                            console.log("Erro ao inserir os dados relacionados a tabela intermediária(missao)")
+                                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                        }
                                     }
-                                }
-                            } 
+                                } 
+                            }
+
+
                             
                             if(usuario.premiacao != undefined || usuario.premiacao != null || usuario.premiacao != ""){
 
@@ -319,6 +399,7 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                             }
 
 
+
                             if(usuario.conquista != undefined || usuario.conquista != null || usuario.conquista != ""){
 
                                 //Manipulação de dados na tabela de relação (tabela intermediária)
@@ -353,6 +434,7 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                                     }
                                 } 
                             }
+
 
 
                             if(usuario.recompensa != undefined || usuario.recompensa != null || usuario.recompensa != ""){
@@ -458,6 +540,15 @@ const listarUsuario = async function(){
 
 
 
+                    //cria o objeto relacionados 
+                    let resultUsuarioMissao = await controlerUsuarioMissao.buscarMissaoIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultUsuarioMissao.status){ //se o status for verdadeiro, ele continua o processo
+                        usuario.missao = resultUsuarioMissao.response.usuarioMissao //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
+
+
                     let resultUsuarioPremiacao = await controlerUsuarioPremiacao.buscarPremiacaoIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
 
                     if(resultUsuarioPremiacao.status){ //se o status for verdadeiro, ele continua o processo
@@ -539,6 +630,15 @@ const buscarUsuarioId = async function(id){
 
 
 
+                        //cria o objeto relacionado 
+                        let resultUsuarioMissao = await controlerUsuarioMissao.buscarMissaoIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultUsuarioMissao.status){ //se o status for verdadeiro, ele continua o processo
+                            usuario.missao = resultUsuarioMissao.response.usuarioMissao //
+                        }
+
+
+
                         let resultUsuarioPremiacao = await controlerUsuarioPremiacao.buscarPremiacaoIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
 
                         if(resultUsuarioPremiacao.status){ //se o status for verdadeiro, ele continua o processo
@@ -598,6 +698,16 @@ const excluirUsuario = async function(id){
             console.log(resultDeleteUsuarioDesafio)
 
             if(!resultDeleteUsuarioDesafio.status){
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+
+
+            //excluindo relacionamento 
+            let resultDeleteUsuarioMissao = await controlerUsuarioMissao.excluirMissaoIdUsuario(id) //exclui os dados relacionados a ele
+            console.log(resultDeleteUsuarioMissao)
+
+            if(!resultDeleteUsuarioMissao.status){
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
