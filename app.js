@@ -21,6 +21,9 @@ const storage       = multer.diskStorage({ //criando um objeto para manipular o 
 
 const upload = multer() // criando um objeto para manipular o multer
 
+// Carregando variáveis de ambiente
+require("dotenv").config();
+
 //criando um objeto para manipular dados do body da API em formato Json
 const bodyParserJSON = bodyParser.json()
 

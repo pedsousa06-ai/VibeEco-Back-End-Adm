@@ -25,6 +25,9 @@ const UPLOAD = require("../upload/controller_upload_azure.js")
 // import do arquivo do JWT (JSON Web Token)
 const jwt = require("../../middleware/middlewareJWT.js")
 
+// Importando o arquivo de serviço de envio de e-mails
+const arquivoEmail  = require("../../service/email.js");
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -731,28 +734,49 @@ const validarDadosUsuario = async function(dados){
 }
 
 //funcao para recuperar a senha do usuario
-const recuperarAcessoUsuario = async function(contentType, usuario){
+const recuperarAcessoUsuario = async function(contentType, emailUsuario){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
 
-        console.log(usuario)
-
+        // variavel para guardar o codigo de redefinição
         let codigo_redefinicao = ""
                 
-        // gerando um codigo de rastreio aleatório de 20 caracteres (letras maiúsculas e números)
+        // gerando um codigo de aleatório de 6 caracteres (letras maiúsculas e números)
         for(let i = 0; i < 6; i++) {
             const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
             codigo_redefinicao += caracteres.charAt(indiceAleatorio);
         }
 
-        console.log(codigo_redefinicao)
+        // variavel para guardar o assunto do email
+        let assunto = "Recuperação de senha - VibeEco"
 
-        // Vai receber o o email do usuario e retornar um código para o front + uma mensagem no email do usuario
+        // enviando o email para o usuário
+        const resultadoEnvio = await arquivoEmail.enviarEmail(emailUsuario.email, assunto, codigo_redefinicao)
+
+        // montando o objeto de resposta
+        //enviando para o banco 
+        let objetoResposta = {
+            "email" : emailUsuario.email,
+            "codigo_redefinicao" : codigo_redefinicao
+        }
+
+        if(resultadoEnvio){
+            message.DEFAULT_MESSAGE.status = message.SUCCESS_EMAIL_SENT.status
+            message.DEFAULT_MESSAGE.status_code = message.SUCCESS_EMAIL_SENT.status_code
+            message.DEFAULT_MESSAGE.message = message.SUCCESS_EMAIL_SENT.message
+            message.DEFAULT_MESSAGE.response = objetoResposta
+
+            return message.DEFAULT_MESSAGE //200
+        }else{
+            return message.ERROR_EMAIL_SEND //500 (erro ao enviar o email)
+        }
+
 
     } catch (error) {
+        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 

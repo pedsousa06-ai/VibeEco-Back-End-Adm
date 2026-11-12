@@ -1,2 +1,4 @@
-# Arquivos de ambiente
+# Variáveis de ambiente
 .env
+.env.*
+!.env.example

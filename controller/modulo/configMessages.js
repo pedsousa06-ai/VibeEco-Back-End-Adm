@@ -46,6 +46,12 @@ const ERROR_NOT_FOUND = {
     message: "Não foi encontrado nenhum dado para retorno."
 }
 
+const ERROR_EMAIL_SEND = {
+    status: false,
+    status_code: 500,
+    message: "Não foi possível enviar o email devido a um erro interno na API."
+}
+
 //Criando mensagens de sucesso da API
 const SUCESS_CREATED_ITEM = {
     status: true,
@@ -76,6 +82,12 @@ const SUCCESS_UPDATE_ITEM = {
     message: "Item atualizado com sucesso"
 }
 
+const SUCCESS_EMAIL_SENT = {
+    status: true,
+    status_code: 200,
+    message: "Email enviado com sucesso!"
+}
+
 
 //exportando as mensagens
 module.exports = {
@@ -85,9 +97,11 @@ module.exports = {
     ERROR_INTERNAL_SERVER_CONTROLLER,
     ERROR_CONTENT_TYPE,
     ERROR_NOT_FOUND,
+    ERROR_EMAIL_SEND,
     SUCESS_CREATED_ITEM,
     SUCESS_RESPONSE,
     SUCCESS_DELETED_ITEM,
     SUCCESS_UPDATE_ITEM,
-    SUCESS_CREATED_ITEM_WARNING
+    SUCESS_CREATED_ITEM_WARNING,
+    SUCCESS_EMAIL_SENT
 }
