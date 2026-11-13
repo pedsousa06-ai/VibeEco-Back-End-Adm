@@ -15,6 +15,7 @@ const controlerUsuarioPremiacao = require("./controller_usuario_premiacao.js")
 const controlerUsuarioConquista = require("./controller_usuario_conquista.js")
 const controlerUsuarioRecompensa = require("./controller_usuario_recompensa.js")
 const controlerUsuarioMissao = require("./controller_usuario_missao.js")
+const controlerUsuarioConteudoEducativo = require("./controller_usuario_conteudo_educativo.js")
 
 
 const { json } = require("body-parser")
@@ -217,6 +218,38 @@ const inserirNovaUsuario = async function(contentType, usuario, foto){
 
 
                                 if(!resultInsertUsuarioRecompensa.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
+                            }
+                        }
+
+
+
+                        if(usuario.conteudoEducativo != undefined || usuario.conteudoEducativo != null || usuario.conteudoEducativo != ""){
+
+                            // Transforma a string em um array real
+                            const objetoConteudoEducativo = JSON.parse(usuario.conteudoEducativo);
+
+                            usuario.conteudoEducativo = objetoConteudoEducativo //substituindo a string do json por um array real
+                            
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(conteudoEducativo of usuario.conteudoEducativo){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let usuarioConteudoEducativo = {
+                                    "id_usuario"            : usuario.id,
+                                    "id_conteudo_educativo" : conteudoEducativo.id,
+                                    "concluido"             : conteudoEducativo.concluido,
+                                    "data_acesso"           : conteudoEducativo.data_acesso,
+                                    "tempo_acesso"          : conteudoEducativo.tempo_acesso
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.inserirNovoUsuarioConteudoEducativo(usuarioConteudoEducativo)
+
+
+                                if(!resultInsertUsuarioConteudoEducativo.status){
                                     return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
                                 }
 
@@ -482,6 +515,48 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
                                 } 
                             }
 
+
+
+                            if(usuario.conteudoEducativo != undefined || usuario.conteudoEducativo != null || usuario.conteudoEducativo != ""){
+
+                                //Manipulação de dados na tabela de relação (tabela intermediária)
+                                let resultDeleteUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.excluirConteudoEducativoIdUsuario(usuario.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                                //após a exlusão de todos os dados relacionados
+                                if(resultDeleteUsuarioConteudoEducativo.status){
+
+
+                                    // Transforma a string em um array real
+                                    const objetoConteudoEducativo = JSON.parse(usuario.conteudoEducativo);
+
+                                    usuario.conteudoEducativo = objetoConteudoEducativo //substituindo a string do json por um array real
+
+                                    //Manipulação de dados para inserir na tabela intermediaria
+                                    for(recompensa of usuario.conteudoEducativo){ //estrutura para percorrer o array recebido na requisição no json
+                                    
+                                        //cria um json com os ids, para mandar os dois juntos
+                                        let usuarioConteudoEducativo = {
+                                            "id_usuario"            : usuario.id,
+                                            "id_conteudo_educativo" : conteudoEducativo.id,
+                                            "concluido"             : conteudoEducativo.concluido,
+                                            "data_acesso"           : conteudoEducativo.data_acesso,
+                                            "tempo_acesso"          : conteudoEducativo.tempo_acesso
+                                        }
+
+                                        //enviando os ids para a controller da tabela intermediaria
+                                        let resultInsertUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.inserirNovoUsuarioConteudoEducativo(usuarioConteudoEducativo)
+
+
+                                        if(!resultInsertUsuarioConteudoEducativo.status){
+                                            return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                        }
+
+                                    }
+                                } 
+                            }
+
+
+
                             message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                             message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                             message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
@@ -509,7 +584,6 @@ const atualizarUsuario = async function(id, contentType, usuario, foto){
         }
         
     } catch (error) {
-        console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
@@ -569,6 +643,14 @@ const listarUsuario = async function(){
 
                     if(resultUsuarioRecompensa.status){ //se o status for verdadeiro, ele continua o processo
                         usuario.recompensa = resultUsuarioRecompensa.response.usuarioRecompensa //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
+
+
+                    let resultUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.buscarConteudoEducativoIdUsuario(usuario.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultUsuarioConteudoEducativo.status){ //se o status for verdadeiro, ele continua o processo
+                        usuario.conteudoEducativo = resultUsuarioConteudoEducativo.response.usuarioConteudoEducativo //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
 
 
@@ -660,6 +742,14 @@ const buscarUsuarioId = async function(id){
                         if(resultUsuarioRecompensa.status){ //se o status for verdadeiro, ele continua o processo
                             usuario.recompensa = resultUsuarioRecompensa.response.usuarioRecompensa //
                         }
+
+
+
+                        let resultUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.buscarConteudoEducativoIdUsuario(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultUsuarioConteudoEducativo.status){ //se o status for verdadeiro, ele continua o processo
+                            usuario.conteudoEducativo = resultUsuarioConteudoEducativo.response.usuarioConteudoEducativo //
+                        }
                     }
 
                     //editando cabeçalho
@@ -695,9 +785,9 @@ const excluirUsuario = async function(id){
 
             //excluindo relacionamento 
             let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
-            console.log(resultDeleteUsuarioDesafio)
 
             if(!resultDeleteUsuarioDesafio.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(desafio)")
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
@@ -705,9 +795,9 @@ const excluirUsuario = async function(id){
 
             //excluindo relacionamento 
             let resultDeleteUsuarioMissao = await controlerUsuarioMissao.excluirMissaoIdUsuario(id) //exclui os dados relacionados a ele
-            console.log(resultDeleteUsuarioMissao)
 
             if(!resultDeleteUsuarioMissao.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(missão)")
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
@@ -716,6 +806,7 @@ const excluirUsuario = async function(id){
             let resultDeleteUsuarioPremiacao = await controlerUsuarioPremiacao.excluirPremiacaofioIdUsuario(id) //exclui os dados relacionados a ele
 
             if(!resultDeleteUsuarioPremiacao.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(premiação)")
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
@@ -724,6 +815,7 @@ const excluirUsuario = async function(id){
             let resultDeleteUsuarioConquista = await controlerUsuarioConquista.excluirConquistaIdUsuario(id) //exclui os dados relacionados a ele
 
             if(!resultDeleteUsuarioConquista.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(conquista)")
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
@@ -732,6 +824,16 @@ const excluirUsuario = async function(id){
             let resultDeleteUsuarioRecompensa = await controlerUsuarioRecompensa.excluirRecompensaIdUsuario(id) //exclui os dados relacionados a ele
 
             if(!resultDeleteUsuarioRecompensa.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(recompensa)")
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+
+
+            let resultDeleteUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.excluirConteudoEducativoIdUsuario(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteUsuarioConteudoEducativo.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(conteudo educativo)")
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 
@@ -741,9 +843,9 @@ const excluirUsuario = async function(id){
             let result = await usuarioDAO.deleteUsuario(id)
 
             if(result){
-
                 return message.SUCCESS_DELETED_ITEM //200 registro excluido
             }else{
+                console.log("Erro ao excluir o registro do usuário")
                 return message.ERROR_INTERNAL_SERVER_MODEL
             }
         }else{

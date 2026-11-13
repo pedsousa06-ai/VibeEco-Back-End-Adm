@@ -201,6 +201,36 @@ const selectMissaoByIdUsuario = async function(idUsuario){
     }
 }
 
+
+//função para retornar os dados secundarios pelo id da tabela principal
+const selectUsuarioMissaoByIdUsuario = async function(idUsuario){
+
+    try {
+        
+        //criando variável sql
+        let sql = `select   tbl_usuario_missao.*
+                        from tbl_usuario
+                            inner join tbl_usuario_missao
+                                on tbl_usuario.id = tbl_usuario_missao.id_usuario
+                    where tbl_usuario.id = ${idUsuario};`
+
+        //executando no banco de dados
+        let result = await knexConex.raw(sql)
+
+        //validando retorno
+        if(Array.isArray(result)){ //vendo se é um array
+
+            return result[0] //retornando somente o que nós pedimos, sem expecificações da tabela
+        //se não for array ele cai aqui
+        }else{
+            return false
+        }
+    } catch (error) {
+        return false
+    }
+}
+
+
 //função para excluir os dados filtrando pelo id da tabela principal, essa função será utilizada no update da tabela principal, pois precisa apagar pra depois inserir os novos dados relacionados
 const deleteMissaoByIdUsuario = async function(idUsuario){
 
@@ -217,6 +247,8 @@ const deleteMissaoByIdUsuario = async function(idUsuario){
         }
         
     } catch (error) {
+        console.log("Erro no deleteMissaoByIdUsuario:")
+        console.log(error)
         return false
     }
 }
@@ -230,5 +262,6 @@ module.exports = {
     deleteUsuarioMissao,
     selectUsuarioByIdMissao,
     selectMissaoByIdUsuario,
-    deleteMissaoByIdUsuario
+    deleteMissaoByIdUsuario,
+    selectUsuarioMissaoByIdUsuario
 }

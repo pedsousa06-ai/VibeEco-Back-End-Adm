@@ -269,7 +269,6 @@ const excluirMissaoIdUsuario = async function(idUsuario){
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
-        
         //mandando para o DAO
         let result = await usuarioMissaoDAO.deleteMissaoByIdUsuario(idUsuario) //manda o id do dado para a função de excluir os dados relacionados a ele na tabela principal
 
