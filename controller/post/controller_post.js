@@ -13,6 +13,9 @@ const postDAO = require("../../model/DAO/post/post.js")
 const { json } = require("body-parser")
 const express = require("express")
 
+// importando controller da tabela intermediaria
+const controlerPostAnexo = require("./controller_post_anexo.js")
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -36,6 +39,33 @@ const inserirNovoPost = async function(contentType, post){
                 if(result){
 
                     post.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+
+
+
+                        if (post.anexo != undefined || post.anexo != null || post.anexo != ""){
+
+                            console.log(post.anexo)
+
+                            //Manipulação de dados para inserir na tabela intermediaria
+                            for(anexo of post.anexo){ //estrutura para percorrer o array recebido na requisição no json
+                            
+                                //cria um json com os ids, para mandar os dois juntos
+                                let postAnexo = {
+                                    "id_post"    : post.id,
+                                    "id_anexo"    : anexo.id
+                                }
+
+                                //enviando os ids para a controller da tabela intermediaria
+                                let resultInsertPostAnexo = await controlerPostAnexo.inserirNovoPostAnexo(postAnexo)    
+
+
+                                if(!resultInsertPostAnexo.status){
+                                    return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                                }
+
+                            }
+
+                        }
 
                     message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
@@ -88,6 +118,33 @@ const atualizarPost = async function(id, contentType, post){
 
                     if(result){
 
+                        if(post.anexo != undefined || post.anexo != null || post.anexo != ""){
+                            //Manipulação de dados na tabela de relação (tabela intermediária)
+                            let resultDeletePostAnexo = await controlerPostAnexo.excluirPostAnexoIdPost(post.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                            //após a exlusão de todos os dados relacionados
+                            if(resultDeletePostAnexo.status){
+
+                                //Manipulação de dados para inserir os Generos do Filme
+                                for(anexo of post.anexo){ //estrutura para percorrer o array recebido na requisição no json 
+                                    
+                                    //cria um json com os ids, para mandar os dois juntos
+                                    let postAnexo = {
+                                        "id_post"    : post.id,
+                                        "id_anexo"    : anexo.id
+                                    }
+                                    
+                                    //enviando os ids para a controller da tabela intermediaria
+                                    let resultInsertPostAnexo = await controlerPostAnexo.inserirNovoPostAnexo(postAnexo)
+
+                                    if(!resultInsertPostAnexo.status){
+                                        console.log("Erro ao inserir os dados relacionados a tabela intermediária(anexo) do post")
+                                        return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                    }
+                                }
+                            } 
+                        }
+
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
@@ -127,6 +184,18 @@ const listarPosts = async function(){
         if(result){
 
             if(result.length > 0){
+
+                //percorrendo o array
+                for(post of result){
+
+                    //cria o objeto relacionados 
+                    let resultPostAnexo = await controlerPostAnexo.buscarAnexoIdPost(post.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultPostAnexo.status){ //se o status for verdadeiro, ele continua o processo
+                        post.anexo = resultPostAnexo.response.postAnexo //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
+                }
 
                 //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
@@ -172,6 +241,18 @@ const buscarPostId = async function(id){
                 //verificando tamanho do array de resposta
                 if(result.length > 0){
 
+                //percorrendo o array
+                for(post of result){
+
+                    //cria o objeto relacionados 
+                    let resultPostAnexo = await controlerPostAnexo.buscarAnexoIdPost(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultPostAnexo.status){ //se o status for verdadeiro, ele continua o processo
+                        post.anexo = resultPostAnexo.response.postAnexo //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
+                }
+
                     //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
@@ -202,6 +283,14 @@ const excluirPost = async function(id){
         let validarId = await buscarPostId(id)
 
         if(validarId.status){
+
+            //excluindo relacionamento 
+            let resultDeletePostAnexo = await controlerPostAnexo.excluirPostAnexoIdPost(id) //exclui os dados relacionados a ele
+
+            if(!resultDeletePostAnexo.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(anexo) do post")
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
 
             //mandadno para o banco
             let result = await postDAO.deletePost(id)
