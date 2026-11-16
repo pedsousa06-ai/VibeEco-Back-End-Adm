@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 
 const SECRET = "vibeecotokensecret"
 
-const EXPIRES = 60
+const EXPIRES = 60 * 60 * 3 // 2 horas
 
 const createJWT = async function (payload) {
     // gerando o token (payload é o que vai dentro do token, nesse caso o id do usuário, SECRET é a chave secreta e expiresIn é o tempo de expiração do token, expiresIn é em segundos)

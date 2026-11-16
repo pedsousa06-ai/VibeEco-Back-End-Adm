@@ -42,7 +42,7 @@ const verifyJWT = async function(request, response, next){
 /* CRUD DA TABELA */
 
 //cadastrar novo dado
-router.post("/", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, upload.single("img"), async function(request, response){
+router.post("/", verifyJWT, bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, upload.single("img"), async function(request, response){
     
     //recebendo dados da requisição
     let dados = request.body
@@ -86,7 +86,7 @@ router.get("/:id", async function(request, response){
 })
 
 //atualizar dado
-router.put("/:id", bodyParserJSON, upload.single("img"), async function(request, response){
+router.put("/:id", verifyJWT, bodyParserJSON, upload.single("img"), async function(request, response){
 
     //recebendo o id e o conteúdo para serem enviados
     let id = request.params.id
@@ -104,7 +104,7 @@ router.put("/:id", bodyParserJSON, upload.single("img"), async function(request,
 })
 
 //deletar dado
-router.delete("/:id", async function(request, response){
+router.delete("/:id", verifyJWT, async function(request, response){
 
     //recebendo o id
     let id = request.params.id
