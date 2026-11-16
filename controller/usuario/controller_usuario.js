@@ -983,6 +983,7 @@ const recuperarAcessoUsuario = async function(contentType, emailUsuario){
 
             return message.DEFAULT_MESSAGE //200
         }else{
+            console.log(resultadoEnvio)
             return message.ERROR_EMAIL_SEND //500 (erro ao enviar o email)
         }
 
