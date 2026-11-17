@@ -9,7 +9,10 @@
 const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL)
-const missaoDAO = require("../../model/DAO/missao/missao.js")
+const missaoDAO = require("../../model/DAO/missao/missao_corrigida.js")
+
+// import da controller das tabelas auxiliares
+const controllerMissaoCategoria = require("./controller_missao_categoria.js")
 
 /* FUNÇÕES PARA O CRUD */
 
@@ -34,6 +37,33 @@ const inserirNovaMissao = async function(contentType, missao){
                 if(result){
 
                     missao.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
+
+
+                    if (missao.categoria != undefined || missao.categoria != null || missao.categoria != ""){
+
+
+                        //Manipulação de dados para inserir na tabela intermediaria
+                        for(categoria of missao.categoria){ //estrutura para percorrer o array recebido na requisição no json
+                        
+                            //cria um json com os ids, para mandar os dois juntos
+                            let missaoCategoria = {
+                                "id_missao"         : missao.id,
+                                "id_categoria"      : categoria.id
+                            }
+
+                            //enviando os ids para a controller da tabela intermediaria
+                            let resultInsertMissaoCategoria = await controllerMissaoCategoria.inserirNovoMissaoCategoria(missaoCategoria)
+
+
+                            if(!resultInsertMissaoCategoria.status){
+                                return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                            }
+
+                        }
+
+                    }
+
+
 
                     message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
@@ -86,6 +116,38 @@ const atualizarMissao = async function(id, contentType, missao){
 
                     if(result){
 
+
+
+                        if(missao.categoria != undefined || missao.categoria != null || missao.categoria != ""){
+                            //Manipulação de dados na tabela de relação (tabela intermediária)
+                            let resultDeleteMissaoCategoria = await controllerMissaoCategoria.excluirCategoriaIdMissao(missao.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                            //após a exlusão de todos os dados relacionados
+                            if(resultDeleteMissaoCategoria.status){
+
+
+                                //Manipulação de dados para inserir os Generos do Filme
+                                for(categoria of missao.categoria){ //estrutura para percorrer o array recebido na requisição no json 
+                                    
+                                    //cria um json com os ids, para mandar os dois juntos
+                                    let missaoCategoria = {
+                                        "id_missao"         : missao.id,
+                                        "id_categoria"      : categoria.id
+                                    }
+                                    
+                                    //enviando os ids para a controller da tabela intermediaria
+                                    let resultInsertMissaoCategoria = await controllerMissaoCategoria.inserirNovoMissaoCategoria(missaoCategoria)
+
+                                    if(!resultInsertMissaoCategoria.status){
+                                        console.log("Erro ao inserir os dados relacionados a tabela intermediária(categoria)")
+                                        return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                    }
+                                }
+                            } 
+                        }
+
+
+
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
@@ -126,6 +188,21 @@ const listarMissao = async function(){
         if(result){
 
             if(result.length > 0){
+
+
+
+                //percorrendo o array
+                for(missao of result){
+
+                    //cria o objeto relacionados 
+                    let resultMissaoCategoria = await controllerMissaoCategoria.buscarCategoriasPorIdMissao(missao.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultMissaoCategoria.status){ //se o status for verdadeiro, ele continua o processo
+                        missao.categoria = resultMissaoCategoria.response.categoria //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+                }
+
+
 
                 //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
@@ -168,6 +245,20 @@ const buscarMissaoId = async function(id){
 
                 if(result.length > 0){
 
+
+                    for(missao of result){
+
+                        //cria o objeto relacionado 
+                        let resultMissaoCategoria = await controllerMissaoCategoria.buscarCategoriasPorIdMissao(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultMissaoCategoria.status){ //se o status for verdadeiro, ele continua o processo
+                            missao.categoria = resultMissaoCategoria.response.categoria //
+                        }
+
+                    }
+
+
+
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                     message.DEFAULT_MESSAGE.response.missao = result
@@ -198,6 +289,18 @@ const excluirMissao = async function(id){
         let validarId = await buscarMissaoId(id)
 
         if(validarId.status){
+
+
+
+            //excluindo relacionamento 
+            let resultDeleteMissaoCategoria = await controllerMissaoCategoria.excluirCategoriaIdMissao(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteMissaoCategoria.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(categoria)")
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+
 
             let result = await missaoDAO.deleteMissao(id)
 
@@ -277,32 +380,7 @@ const validarDadosMissao = async function(dados){
         message.ERROR_BAD_REQUEST.field = "[DATA_TERMINO] ANTERIOR AO INICIO"
         return message.ERROR_BAD_REQUEST
 
-    }else if(!Array.isArray(dados.etapas) || dados.etapas.length == 0 || dados.etapas.length > 20){
-
-        message.ERROR_BAD_REQUEST.field = "[ETAPAS] INFORME DE 1 A 20 ETAPAS"
-        return message.ERROR_BAD_REQUEST
-
     }else{
-
-        // cada etapa precisa de título e XP positivo
-        for(const [i, etapa] of dados.etapas.entries()){
-
-            if(etapa == null || typeof etapa !== "object" || etapa.titulo == undefined || String(etapa.titulo).trim() == "" || String(etapa.titulo).length > 150){
-                message.ERROR_BAD_REQUEST.field = `[ETAPAS ${i + 1}: TITULO] INVALIDO`
-                return message.ERROR_BAD_REQUEST
-            }
-
-            if(etapa.xp == undefined || etapa.xp === "" || etapa.xp == null || isNaN(etapa.xp) || Number(etapa.xp) <= 0){
-                message.ERROR_BAD_REQUEST.field = `[ETAPAS ${i + 1}: XP] INVALIDO`
-                return message.ERROR_BAD_REQUEST
-            }
-
-            etapa.titulo = String(etapa.titulo).trim()
-            etapa.xp = Number(etapa.xp)
-        }
-
-        // o XP total da missão é sempre a soma das etapas (ignora o valor que veio no body)
-        dados.total_xp_missao = dados.etapas.reduce((soma, etapa) => soma + etapa.xp, 0)
 
         return false
     }
