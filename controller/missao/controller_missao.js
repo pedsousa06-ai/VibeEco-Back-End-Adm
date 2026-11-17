@@ -9,7 +9,7 @@
 const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL)
-const missaoDAO = require("../../model/DAO/missao/missao_corrigida.js")
+const missaoDAO = require("../../model/DAO/missao/missao.js")
 
 // import da controller das tabelas auxiliares
 const controllerMissaoCategoria = require("./controller_missao_categoria.js")
