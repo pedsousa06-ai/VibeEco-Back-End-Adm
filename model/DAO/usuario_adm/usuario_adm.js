@@ -186,7 +186,9 @@ const updateSenhaUsuarioADM = async function(senha){
 
         //criando variável sql
         let sql =  `UPDATE tbl_usuario_adm
-            SET senha = '${senha.senha}'
+            SET senha = '${senha.senha}',
+                codigo_recuperacao = NULL,
+                codigo_expiracao = NULL
             WHERE id = ${senha.id};`
 
 
@@ -205,6 +207,68 @@ const updateSenhaUsuarioADM = async function(senha){
 
 }
 
+//buscar usuario_adm por email
+const selectByEmailUsuarioADM = async function(email){
+    try {
+        let sql = `SELECT * FROM tbl_usuario_adm WHERE email = '${email}' LIMIT 1;`
+        let result = await knexConex.raw(sql)
+        if (Array.isArray(result) && result[0].length > 0) {
+            return result[0][0]
+        }
+        return false
+    } catch (error) {
+        return false
+    }
+}
+
+//salvar codigo de recuperacao
+const salvarCodigoRecuperacao = async function(email, codigo, minutosValidade = 15){
+    try {
+        let sql = `UPDATE tbl_usuario_adm 
+                   SET codigo_recuperacao = '${codigo}', 
+                       codigo_expiracao = DATE_ADD(NOW(), INTERVAL ${minutosValidade} MINUTE) 
+                   WHERE email = '${email}';`
+        let result = await knexConex.raw(sql)
+        return !!result
+    } catch (error) {
+        return false
+    }
+}
+
+//validar codigo de recuperacao
+const validarCodigoRecuperacao = async function(email, codigo){
+    try {
+        let sql = `SELECT id, email, id_nivel_acesso 
+                   FROM tbl_usuario_adm 
+                   WHERE email = '${email}' 
+                     AND codigo_recuperacao = '${codigo}' 
+                     AND codigo_expiracao >= NOW() 
+                   LIMIT 1;`
+        let result = await knexConex.raw(sql)
+        if (Array.isArray(result) && result[0].length > 0) {
+            return result[0][0]
+        }
+        return false
+    } catch (error) {
+        return false
+    }
+}
+
+//atualizar senha por email
+const updateSenhaPorEmail = async function(email, novaSenha){
+    try {
+        let sql = `UPDATE tbl_usuario_adm 
+                   SET senha = '${novaSenha}', 
+                       codigo_recuperacao = NULL, 
+                       codigo_expiracao = NULL 
+                   WHERE email = '${email}';`
+        let result = await knexConex.raw(sql)
+        return !!result
+    } catch (error) {
+        return false
+    }
+}
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     insertUsuarioADM,
@@ -213,5 +277,9 @@ module.exports = {
     selectByIdUsuarioADM,
     deleteUsuarioADM,
     validarLogin,
-    updateSenhaUsuarioADM
+    updateSenhaUsuarioADM,
+    selectByEmailUsuarioADM,
+    salvarCodigoRecuperacao,
+    validarCodigoRecuperacao,
+    updateSenhaPorEmail
 }

@@ -33,7 +33,7 @@ const app = express()
 const corsOption = {
     origin: "*",                                      // era ["*"]: com array, o "*" é tratado como texto e não libera nada
     methods: "GET, POST, PUT, DELETE, OPTIONS",       // era OPTION
-    allowedHeaders: ["Content-Type", "Authorization"] // era "Autorizations"
+    allowedHeaders: ["Content-Type", "Authorization", "x-access-token"] // libera cabeçalhos para requisições e tokens
 }
 
 //configurando as permissões da API atravez do CORS
@@ -191,7 +191,8 @@ app.use("/v1/vibeEco/administrador/post", cors(), postRouter) //quando o usuári
 
 
 //iniciando uma API para receber requisições
-app.listen(8080, function(){ //decidindo a porta para saída do conteúdo
-    console.log("API funcionando e aguardando requisições...") //vai mostrar no terminal que a API já está funcionando
+const PORT = process.env.PORT || 8080
+app.listen(PORT, function(){ //decidindo a porta para saída do conteúdo
+    console.log(`API funcionando e aguardando requisições na porta ${PORT}...`) //vai mostrar no terminal que a API já está funcionando
 })
 

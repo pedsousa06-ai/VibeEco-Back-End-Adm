@@ -4,31 +4,31 @@
 
 const jwt = require('jsonwebtoken')
 
-const SECRET = "vibeecotokensecret"
+const SECRET = process.env.JWT_SECRET || "vibeecotokensecret"
 
-const EXPIRES = 60 * 60 * 3 // 2 horas
+const EXPIRES = 60 * 60 * 3 // 3 horas
 
 const createJWT = async function (payload) {
-    // gerando o token (payload é o que vai dentro do token, nesse caso o id do usuário, SECRET é a chave secreta e expiresIn é o tempo de expiração do token, expiresIn é em segundos)
+    // gerando o token
     const token = jwt.sign({userID: payload}, SECRET, {expiresIn: EXPIRES})
-
     return token
 }
 
 const validarJWT = async function (token) {
+    if (!token) {
+        return false
+    }
 
-    let status
+    if (typeof token === 'string' && token.startsWith('Bearer ')) {
+        token = token.slice(7).trim()
+    }
 
-    jwt.verify(token, SECRET, async function(err, decoded) {
-
-        if (err) {
-            status = false
-        }else{
-            status = true
-        }
-    })
-
-    return status
+    try {
+        const decoded = jwt.verify(token, SECRET)
+        return !!decoded
+    } catch (err) {
+        return false
+    }
 }
 
 module.exports = {

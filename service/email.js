@@ -41,7 +41,7 @@ const enviarEmail = async function(destinatario, assunto, mensagem){
 
                         Para continuar com o processo, utilize o código de verificação abaixo:
 
-                        Código de recuperação: {{codigo}}
+                        Código de recuperação: ${mensagem}
 
                         Esse código possui validade limitada e deve ser utilizado apenas uma vez. Por segurança, não compartilhe esse código com outras pessoas.
 
@@ -59,7 +59,6 @@ const enviarEmail = async function(destinatario, assunto, mensagem){
 
                 // Versão formatada em HTML
                 html: `
-                        <CodeBlock language="html" editable>
                         <!DOCTYPE html>
                         <html lang="pt-BR">
 
@@ -323,7 +322,6 @@ const enviarEmail = async function(destinatario, assunto, mensagem){
 
                         </body>
                         </html>
-                        </CodeBlock>
                     `
         };
 

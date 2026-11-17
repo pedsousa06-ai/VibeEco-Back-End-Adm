@@ -16,7 +16,7 @@ const verifyJWT = async function(request, response, next){
     
     const jwt = require("../middleware/middlewareJWT.js") //importando o middleware para validar o token
     
-    let token = request.headers["x-access-token"] //recebendo o token do cabeçalho da requisição
+    let token = request.headers["x-access-token"] || request.headers["authorization"] //recebendo o token do cabeçalho da requisição
 
     const autencidadeToken = await jwt.validarJWT(token) //validando o token
 
@@ -58,24 +58,47 @@ router.get("/", async function(request, response){
     response.json(result)
 })
 
-//recuperar senha
-router.get("/recuperarAcesso", bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, async function(request, response){
-    
-    //recebendo dados da requisição
+//recuperar senha (POST e GET para compatibilidade)
+router.post("/recuperarAcesso", bodyParserJSON, async function(request, response){
     let dados = request.body
-
-    //verificando content-type
     let contentType = request.headers["content-type"]
-
-    //enviando para a controller
     let result = await controllerUsuarioADM.recuperarAcessoUsuarioADM(contentType, dados)
-
-    //enviando resposta da requisição
     response.status(result.status_code)
     response.json(result)
 })
 
-// validar login do usuário
+router.get("/recuperarAcesso", bodyParserJSON, async function(request, response){
+    let dados = request.body || request.query
+    let contentType = request.headers["content-type"] || "application/json"
+    let result = await controllerUsuarioADM.recuperarAcessoUsuarioADM(contentType, dados)
+    response.status(result.status_code)
+    response.json(result)
+})
+
+//validar código de recuperação
+router.post("/validarCodigo", bodyParserJSON, async function(request, response){
+    let dados = request.body
+    let result = await controllerUsuarioADM.validarCodigoAcesso(dados)
+    response.status(result.status_code)
+    response.json(result)
+})
+
+//redefinir senha utilizando o código validado
+router.post("/redefinirSenha", bodyParserJSON, async function(request, response){
+    let dados = request.body
+    let result = await controllerUsuarioADM.redefinirSenhaComCodigo(dados)
+    response.status(result.status_code)
+    response.json(result)
+})
+
+// validar login do usuário (POST e GET para compatibilidade)
+router.post("/login", bodyParserJSON, async function(request, response){
+    let login = request.body
+    let result = await controllerUsuarioADM.validarLogin(login)
+    response.status(result.status_code)
+    response.json(result)
+})
+
 router.get("/login", bodyParserJSON, async function(request, response){
 
     //recebendo id

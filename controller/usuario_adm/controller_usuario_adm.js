@@ -262,7 +262,7 @@ const validarLogin = async function(login){
                 if(result.length > 0){
 
                         // criando o token JWT com o id do usuario para mandar na resposta
-                        let tokenUsuario = await jwt.createJWT(result.id)
+                        let tokenUsuario = await jwt.createJWT(result[0].id)
     
                         // adicionando o token JTW no objeto de resposta
                         result[0].token = tokenUsuario
@@ -322,47 +322,139 @@ const recuperarAcessoUsuarioADM = async function(contentType, emailUsuario){
     let message = JSON.parse(JSON.stringify(config_message))
 
     try {
+        let email = emailUsuario?.email ? String(emailUsuario.email).trim() : ""
 
-        // variavel para guardar o codigo de redefinição
-        let codigo_redefinicao = ""
-                
-        // gerando um codigo de aleatório de 6 caracteres (letras maiúsculas e números)
-        for(let i = 0; i < 6; i++) {
-            const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            const indiceAleatorio = Math.floor(Math.random() * caracteres.length);
-            codigo_redefinicao += caracteres.charAt(indiceAleatorio);
+        if(!email || !email.includes("@")){
+            message.ERROR_BAD_REQUEST.field = "[EMAIL] INVALIDO"
+            return message.ERROR_BAD_REQUEST
         }
 
-        // variavel para guardar o assunto do email
+        // verificando se o usuário administrador existe no banco
+        const admExiste = await usuarioADMDAO.selectByEmailUsuarioADM(email)
+        if(!admExiste){
+            return {
+                status: false,
+                status_code: 404,
+                message: "E-mail não encontrado na base de administradores."
+            }
+        }
+
+        // gerando código numérico de 6 dígitos
+        const codigo_redefinicao = Math.floor(100000 + Math.random() * 900000).toString()
+
+        // salvando código no banco de dados com validade de 15 minutos
+        await usuarioADMDAO.salvarCodigoRecuperacao(email, codigo_redefinicao, 15)
+
+        // assunto e envio do e-mail
         let assunto = "Recuperação de senha - VibeEco"
+        const resultadoEnvio = await arquivoEmail.enviarEmail(email, assunto, codigo_redefinicao)
 
-        // enviando o email para o usuário
-        const resultadoEnvio = await arquivoEmail.enviarEmail(emailUsuario.email, assunto, codigo_redefinicao)
-
-        // montando o objeto de resposta
-        //enviando para o banco 
         let objetoResposta = {
-            "email" : emailUsuario.email,
-            "codigo_redefinicao" : codigo_redefinicao
+            "email": email,
+            "codigo_redefinicao": codigo_redefinicao,
+            "email_enviado": resultadoEnvio
         }
 
         if(resultadoEnvio){
-            message.DEFAULT_MESSAGE.status = message.SUCCESS_EMAIL_SENT.status
-            message.DEFAULT_MESSAGE.status_code = message.SUCCESS_EMAIL_SENT.status_code
-            message.DEFAULT_MESSAGE.message = message.SUCCESS_EMAIL_SENT.message
-            message.DEFAULT_MESSAGE.response = objetoResposta
-
-            return message.DEFAULT_MESSAGE //200
-        }else{
-            return message.ERROR_EMAIL_SEND //500 (erro ao enviar o email)
+            console.log(`[VIBEECO] E-mail de recuperação enviado para: ${email}`)
+        } else {
+            console.warn(`[VIBEECO] Falha ao enviar via SMTP Gmail (verifique se a conta Google exige Senha de App).`)
+            console.warn(`[VIBEECO - DEV] Código de verificação gerado para ${email}: >>> ${codigo_redefinicao} <<<`)
         }
 
+        message.DEFAULT_MESSAGE.status = true
+        message.DEFAULT_MESSAGE.status_code = 200
+        message.DEFAULT_MESSAGE.message = resultadoEnvio 
+            ? "Código de recuperação enviado com sucesso para o seu e-mail!"
+            : "Código de recuperação gerado! (Verifique o terminal do servidor se não receber o e-mail)."
+        message.DEFAULT_MESSAGE.response = objetoResposta
+
+        return message.DEFAULT_MESSAGE
 
     } catch (error) {
         console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER
     }
 
+}
+
+// validar código de recuperação
+const validarCodigoAcesso = async function(dados){
+    let message = JSON.parse(JSON.stringify(config_message))
+    try {
+        let email = dados?.email ? String(dados.email).trim() : ""
+        let codigo = dados?.codigo ? String(dados.codigo).trim() : ""
+
+        if(!email || !codigo){
+            message.ERROR_BAD_REQUEST.field = "[EMAIL E CODIGO] OBRIGATORIOS"
+            return message.ERROR_BAD_REQUEST
+        }
+
+        const adm = await usuarioADMDAO.validarCodigoRecuperacao(email, codigo)
+        if(adm){
+            message.DEFAULT_MESSAGE.status = true
+            message.DEFAULT_MESSAGE.status_code = 200
+            message.DEFAULT_MESSAGE.message = "Código validado com sucesso!"
+            message.DEFAULT_MESSAGE.response = { email: adm.email, id: adm.id }
+            return message.DEFAULT_MESSAGE
+        } else {
+            return {
+                status: false,
+                status_code: 400,
+                message: "Código de verificação incorreto ou expirado. Solicite um novo código."
+            }
+        }
+    } catch (error) {
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
+}
+
+// redefinir senha com código
+const redefinirSenhaComCodigo = async function(dados){
+    let message = JSON.parse(JSON.stringify(config_message))
+    try {
+        let email = dados?.email ? String(dados.email).trim() : ""
+        let codigo = dados?.codigo ? String(dados.codigo).trim() : ""
+        let novaSenha = dados?.novaSenha ? String(dados.novaSenha) : ""
+
+        if(!email || !codigo || !novaSenha){
+            message.ERROR_BAD_REQUEST.field = "[DADOS_INCOMPLETOS]"
+            return message.ERROR_BAD_REQUEST
+        }
+
+        if(novaSenha.length < 8){
+            return {
+                status: false,
+                status_code: 400,
+                message: "A nova senha deve ter pelo menos 8 caracteres."
+            }
+        }
+
+        // conferindo código no banco de dados
+        const adm = await usuarioADMDAO.validarCodigoRecuperacao(email, codigo)
+        if(!adm){
+            return {
+                status: false,
+                status_code: 400,
+                message: "Código de verificação inválido ou expirado."
+            }
+        }
+
+        const atualizou = await usuarioADMDAO.updateSenhaPorEmail(email, novaSenha)
+        if(atualizou){
+            message.DEFAULT_MESSAGE.status = true
+            message.DEFAULT_MESSAGE.status_code = 200
+            message.DEFAULT_MESSAGE.message = "Senha redefinida com sucesso!"
+            message.DEFAULT_MESSAGE.response = { email: email }
+            return message.DEFAULT_MESSAGE
+        } else {
+            return message.ERROR_INTERNAL_SERVER_MODEL
+        }
+    } catch (error) {
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+    }
 }
 
 //funcao para redefinir a senha
@@ -372,7 +464,7 @@ const redefinirSenhaUsuarioADM = async function(id, contentType, usuario){
 
     try {
         //verificando existencia do id
-        let validarId = await buscarUsuarioId(id)
+        let validarId = await buscarUsuarioADMId(id)
 
 
         if(validarId.status){
@@ -421,5 +513,7 @@ module.exports = {
     excluirUsuarioADM,
     validarLogin,
     recuperarAcessoUsuarioADM,
+    validarCodigoAcesso,
+    redefinirSenhaComCodigo,
     redefinirSenhaUsuarioADM
 }
