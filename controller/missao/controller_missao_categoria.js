@@ -205,11 +205,13 @@ const validarDados = function(dados){
         if(dados.id_missao == undefined || dados.id_missao == "" || dados.id_missao == null || isNaN(dados.id_missao)){
 
             message.ERROR_BAD_REQUEST.field = "O campo [ID_MISSAO] está incorreto!"
+            console.log("id_missao")
             return message.ERROR_BAD_REQUEST
 
         }else if(dados.id_categoria == undefined || dados.id_categoria == "" || dados.id_categoria == null || isNaN(dados.id_categoria)){
 
             message.ERROR_BAD_REQUEST.field = "O campo [ID_CATEGORIA] está incorreto!"
+            console.log("id_categoria")
             return message.ERROR_BAD_REQUEST
 
         }else{
@@ -217,6 +219,7 @@ const validarDados = function(dados){
         }
 
     } catch (error) {
+        console.log(error)
         return false
     }
 }

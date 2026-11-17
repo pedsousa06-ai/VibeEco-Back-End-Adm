@@ -13,6 +13,7 @@ const missaoDAO = require("../../model/DAO/missao/missao_corrigida.js")
 
 // import da controller das tabelas auxiliares
 const controllerMissaoCategoria = require("./controller_missao_categoria.js")
+const controllerMissaoEtapa = require("./controller_missao_etapa.js")
 
 /* FUNÇÕES PARA O CRUD */
 
@@ -56,6 +57,36 @@ const inserirNovaMissao = async function(contentType, missao){
 
 
                             if(!resultInsertMissaoCategoria.status){
+                                console.log("ERRO: missao categoria")
+                                return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
+                            }
+
+                        }
+
+                    }
+
+
+
+                    if (missao.etapa != undefined || missao.etapa != null || missao.etapa != ""){
+
+
+                        //Manipulação de dados para inserir na tabela intermediaria
+                        for(etapa of missao.etapa){ //estrutura para percorrer o array recebido na requisição no json
+                        
+                            //cria um json com os ids, para mandar os dois juntos
+                            let missaoEtapa = {
+                                "id_missao"         : missao.id,
+                                "titulo"            : etapa.titulo,
+                                "xp"                : etapa.xp,
+                                "ordem"             : etapa.ordem
+                            }
+
+                            //enviando os ids para a controller da tabela intermediaria
+                            let resultInsertMissaoEtapa = await controllerMissaoEtapa.inserirNovaMissaoEtapa(missaoEtapa)
+
+
+                            if(!resultInsertMissaoEtapa.status){
+                                console.log("ERRO: missao etapa")
                                 return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os dados não foram inseridos
                             }
 
@@ -148,6 +179,39 @@ const atualizarMissao = async function(id, contentType, missao){
 
 
 
+                        if(missao.etapa != undefined || missao.etapa != null || missao.etapa != ""){
+
+                            //Manipulação de dados na tabela de relação (tabela intermediária)
+                            let resultDeleteMissaoEtapa = await controllerMissaoEtapa.excluirEtapaIdMissao(missao.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
+
+                            //após a exlusão de todos os dados relacionados
+                            if(resultDeleteMissaoEtapa.status){
+
+
+                                //Manipulação de dados para inserir os Generos do Filme
+                                for(etapa of missao.etapa){ //estrutura para percorrer o array recebido na requisição no json 
+                                    
+                                    //cria um json com os ids, para mandar os dois juntos
+                                    let missaoEtapa = {
+                                        "id_missao"         : missao.id,
+                                        "titulo"            : etapa.titulo,
+                                        "xp"                : etapa.xp,
+                                        "ordem"             : etapa.ordem
+                                    }
+                                    
+                                    //enviando os ids para a controller da tabela intermediaria
+                                    let resultInsertMissaoEtapa = await controllerMissaoEtapa.inserirNovaMissaoEtapa(missaoEtapa)
+
+                                    if(!resultInsertMissaoEtapa.status){
+                                        console.log("Erro ao inserir os dados relacionados a tabela intermediária(etapa)")
+                                        return message.SUCESS_CREATED_ITEM_WARNING //201, mas com aviso de que os generos não foram inseridos
+                                    }
+                                }
+                            } 
+                        }
+
+
+
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
@@ -200,6 +264,16 @@ const listarMissao = async function(){
                     if(resultMissaoCategoria.status){ //se o status for verdadeiro, ele continua o processo
                         missao.categoria = resultMissaoCategoria.response.categoria //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
                     }
+
+
+
+                    //cria o objeto relacionados 
+                    let resultMissaoEtapa = await controllerMissaoEtapa.buscarEtapasPorIdMissao(missao.id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                    if(resultMissaoEtapa.status){ //se o status for verdadeiro, ele continua o processo
+                        missao.etapa = resultMissaoEtapa.response.etapa //cria um atributo  dentro do Json de  e atribui o resultado relacionado a ele
+                    }
+
                 }
 
 
@@ -255,6 +329,15 @@ const buscarMissaoId = async function(id){
                             missao.categoria = resultMissaoCategoria.response.categoria //
                         }
 
+
+
+                        //cria o objeto relacionado 
+                        let resultMissaoEtapa = await controllerMissaoEtapa.buscarEtapasPorIdMissao(id) //enviando o id  para a função que busca os dados relacionados a ele
+
+                        if(resultMissaoEtapa.status){ //se o status for verdadeiro, ele continua o processo
+                            missao.etapa = resultMissaoEtapa.response.etapa //
+                        }
+
                     }
 
 
@@ -297,6 +380,15 @@ const excluirMissao = async function(id){
 
             if(!resultDeleteMissaoCategoria.status){
                 console.log("Erro ao excluir os dados relacionados a tabela intermediária(categoria)")
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
+
+            //excluindo relacionamento 
+            let resultDeleteMissaoEtapa = await controllerMissaoEtapa.excluirMissaoEtapa(id) //exclui os dados relacionados a ele
+
+            if(!resultDeleteMissaoEtapa.status){
+                console.log("Erro ao excluir os dados relacionados a tabela intermediária(etapa)")
                 return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
 

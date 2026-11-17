@@ -212,12 +212,12 @@ const validarDados = function(dados){
             message.ERROR_BAD_REQUEST.field = "O campo [TITULO] está incorreto!"
             return message.ERROR_BAD_REQUEST
 
-        }else if(dados.xp == undefined || dados.xp == "" || dados.xp == null || !isNaN(dados.xp)){
+        }else if(dados.xp == undefined || dados.xp == "" || dados.xp == null || isNaN(dados.xp)){
 
             message.ERROR_BAD_REQUEST.field = "O campo [XP] está incorreto!"
             return message.ERROR_BAD_REQUEST
 
-        }else if(dados.ordem == undefined || dados.ordem == "" || dados.ordem == null || !isNaN(dados.ordem)){
+        }else if(dados.ordem == undefined || dados.ordem == "" || dados.ordem == null || isNaN(dados.ordem)){
 
             message.ERROR_BAD_REQUEST.field = "O campo [ORDEM] está incorreto!"
             return message.ERROR_BAD_REQUEST

@@ -25,11 +25,11 @@ const insertMissaoEtapa = async function(missaoEtapa){
             `insert into tbl_missao_etapa (
                 titulo,
                 xp,
-                ordem
+                ordem,
                 id_missao
             )
             values (
-                ${missaoEtapa.titulo},
+                "${missaoEtapa.titulo}",
                 ${missaoEtapa.xp},
                 ${missaoEtapa.ordem},
                 ${missaoEtapa.id_missao}
@@ -54,9 +54,9 @@ const updateMissaoEtapa = async function(missaoEtapa){
     try {
 
         let sql =   `update tbl_missao_etapa set
-        titulo         = ${missaoEtapa.titulo}
-        xp             = ${missaoEtapa.xp}
-        ordem          = ${missaoEtapa.ordem}
+        titulo         = "${missaoEtapa.titulo}",
+        xp             = ${missaoEtapa.xp},
+        ordem          = ${missaoEtapa.ordem},
         id_missao      = ${missaoEtapa.id_missao}
             where id = ${missaoEtapa.id};`
 
@@ -171,7 +171,7 @@ const selectEtapaByIdMissao = async function(idMissao){
     try {
         
         //criando variável sql
-        let sql = `select * from tbl_missao_etapa where id.missao = ${idMissao}`
+        let sql = `select * from tbl_missao_etapa where id_missao = ${idMissao}`
 
         //executando no banco de dados
         let result = await knexConex.raw(sql)
