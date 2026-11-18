@@ -1,37 +1,95 @@
-/**
- * COLOCAR COMENTÁRISO DEPOIS
-**/
 
-const jwt = require('jsonwebtoken')
+    const jwt = require('jsonwebtoken')
 
-const SECRET = "vibeecotokensecret"
+    // Segredo carregado pelo arquivo .env
+    const SECRET = process.env.JWT_SECRET
 
-const EXPIRES = 60 * 60 * 3 // 2 horas
+    // Tempo de validade do token: 3 horas
+    const EXPIRES = Number(process.env.JWT_EXPIRES_IN) || 10800
 
-const createJWT = async function (payload) {
-    // gerando o token (payload é o que vai dentro do token, nesse caso o id do usuário, SECRET é a chave secreta e expiresIn é o tempo de expiração do token, expiresIn é em segundos)
-    const token = jwt.sign({userID: payload}, SECRET, {expiresIn: EXPIRES})
+    // Verifica se o segredo foi configurado
+    if (!SECRET) {
+        throw new Error('JWT_SECRET não foi configurado no arquivo .env')
+    }
 
-    return token
-}
+    // Gera o token JWT do administrador ou usuário
+    const createJWT = async function (payload) {
+        return jwt.sign(
+            { userID: payload },
+            SECRET,
+            { expiresIn: EXPIRES }
+        )
+    }
 
-const validarJWT = async function (token) {
-
-    let status
-
-    jwt.verify(token, SECRET, async function(err, decoded) {
-
-        if (err) {
-            status = false
-        }else{
-            status = true
+    // Verifica o token e retorna os dados armazenados nele
+    const verificarToken = function (token) {
+        if (!token) {
+            throw new Error('Token não informado.')
         }
-    })
 
-    return status
-}
+        return jwt.verify(token, SECRET)
+    }
 
-module.exports = {
-    createJWT,
-    validarJWT
-}
+    // Verifica se o token é válido
+    const validarJWT = async function (token) {
+        try {
+            verificarToken(token)
+            return true
+        } catch (erro) {
+            return false
+        }
+    }
+
+    // Protege as rotas da API utilizando JWT
+    const protegerApi = function (request, response, next) {
+
+        // Permite requisições de verificação do CORS
+        if (request.method === 'OPTIONS') {
+            return next()
+        }
+
+        // Rotas que não precisam de autenticação
+        const rotasPublicas = [
+            '/usuarioADM/login',
+            '/usuarioADM/recuperarAcesso',
+            '/usuarioADM/validarCodigo',
+            '/usuarioADM/redefinirSenha'
+        ]
+
+        // Permite acesso às rotas públicas somente pelos métodos esperados
+        if (
+            request.method === 'POST' &&
+            rotasPublicas.includes(request.path)
+        ) {
+            return next()
+        }
+
+        // Busca o token nos cabeçalhos da requisição
+        const token =
+            request.headers['x-access-token'] ||
+            request.headers.authorization?.replace(/^Bearer\s+/i, '')
+
+        try {
+            // Verifica a validade do token
+            const dadosToken = verificarToken(token)
+
+            // Armazena o ID do administrador autenticado
+            request.adminId = dadosToken.userID
+
+            return next()
+
+        } catch (erro) {
+            return response.status(401).json({
+                status: false,
+                status_code: 401,
+                message: 'Acesso não autorizado. Token inválido ou expirado.'
+            })
+        }
+    }
+
+    module.exports = {
+        createJWT,
+        validarJWT,
+        verificarToken,
+        protegerApi
+    }
