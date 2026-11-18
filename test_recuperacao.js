@@ -1,6 +1,8 @@
 const http = require('http');
 
 async function testRecovery() {
+  // o teste lê o código direto da resposta da API, então precisa desta flag (apenas para desenvolvimento)
+  process.env.EXPOR_CODIGO_DEV = 'true';
   require('./app.js');
   await new Promise(r => setTimeout(r, 1000));
 

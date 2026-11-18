@@ -1,6 +1,6 @@
 //importando o express
 const express = require("express")
-const bodyParser    = require("body-parser")
+const bodyParser = require("body-parser")
 
 //criando um objeto para manipular dados do body da API em formato Json
 const bodyParserJSON = bodyParser.json()
@@ -11,165 +11,92 @@ const router = express.Router()
 //importando o arquivo da controller, para pode enviar os dados para serem processados
 const controllerUsuarioADM = require("../controller/usuario_adm/controller_usuario_adm.js")
 
-// função para receber o toke e validar o JWT
-const verifyJWT = async function(request, response, next){
-    
-    const jwt = require("../middleware/middlewareJWT.js") //importando o middleware para validar o token
-    
-    let token = request.headers["x-access-token"] || request.headers["authorization"] //recebendo o token do cabeçalho da requisição
+/*
+ * A validação do JWT é feita UMA vez, no app.js (middleware "protegerApi").
+ * Rotas públicas (sem token): POST /login, /recuperarAcesso, /validarCodigo e /redefinirSenha.
+ * Todas as outras exigem o header "x-access-token" ou "Authorization: Bearer <token>".
+ * O id do administrador logado fica em request.adminId.
+ */
 
-    const autencidadeToken = await jwt.validarJWT(token) //validando o token
-
-    if(autencidadeToken){ //se o token for válido, chama a próxima função
-        next()
-    }else{ //se o token for inválido, retorna um erro
-        return response.status(401).end("Acesso negado! Token inválido ou expirado.")
-    }
-}
-
-
-/* CRUD DA TABELA */
-
-//cadastrar novo dado
-router.post("/", verifyJWT, bodyParserJSON /*serve para captar o conteúdo enviado na requisição e colocar*/, async function(request, response){
-    
-    //recebendo dados da requisição
-    let dados = request.body
-
-    //verificando content-type
-    let contentType = request.headers["content-type"]
-
-    //enviando para a controller
-    let result = await controllerUsuarioADM.inserirNovaUsuarioADM(contentType, dados)
-
-    //enviando resposta da requisição
+//envia a resposta padronizada
+const responder = function(response, result){
     response.status(result.status_code)
     response.json(result)
+}
+
+/* ROTAS PÚBLICAS */
+
+// login: devolve os dados do administrador e o token JWT
+router.post("/login", bodyParserJSON, async function(request, response){
+    responder(response, await controllerUsuarioADM.validarLogin(request.body))
+})
+
+// "esqueci a senha" - etapa 1: envia o código por e-mail
+router.post("/recuperarAcesso", bodyParserJSON, async function(request, response){
+    let contentType = request.headers["content-type"]
+    responder(response, await controllerUsuarioADM.recuperarAcessoUsuarioADM(contentType, request.body))
+})
+
+// "esqueci a senha" - etapa 2: valida o código
+router.post("/validarCodigo", bodyParserJSON, async function(request, response){
+    responder(response, await controllerUsuarioADM.validarCodigoAcesso(request.body))
+})
+
+// "esqueci a senha" - etapa 3: define a nova senha usando o código
+router.post("/redefinirSenha", bodyParserJSON, async function(request, response){
+    responder(response, await controllerUsuarioADM.redefinirSenhaComCodigo(request.body))
+})
+
+/* PERFIL DO ADMINISTRADOR LOGADO (tela de Configurações) - ficam ANTES de "/:id" */
+
+router.get("/me", async function(request, response){
+    responder(response, await controllerUsuarioADM.obterMeuPerfil(request.adminId))
+})
+
+router.put("/me", bodyParserJSON, async function(request, response){
+    responder(response, await controllerUsuarioADM.atualizarMeuPerfil(request.adminId, request.body))
+})
+
+router.put("/me/senha", bodyParserJSON, async function(request, response){
+    responder(response, await controllerUsuarioADM.alterarMinhaSenha(request.adminId, request.body))
+})
+
+/* CRUD DA TABELA (protegido pelo JWT) */
+
+//cadastrar novo dado
+router.post("/", bodyParserJSON, async function(request, response){
+    let contentType = request.headers["content-type"]
+    responder(response, await controllerUsuarioADM.inserirNovaUsuarioADM(contentType, request.body))
 })
 
 //listar todos os dados
 router.get("/", async function(request, response){
-
-    //pede os dados e aguarda a resposta
-    let result = await controllerUsuarioADM.listarUsuarioADM()
-
-    //envia os dados recebidos
-    response.status(result.status_code)
-    response.json(result)
+    responder(response, await controllerUsuarioADM.listarUsuarioADM())
 })
 
-//recuperar senha (POST e GET para compatibilidade)
-router.post("/recuperarAcesso", bodyParserJSON, async function(request, response){
-    let dados = request.body
-    let contentType = request.headers["content-type"]
-    let result = await controllerUsuarioADM.recuperarAcessoUsuarioADM(contentType, dados)
-    response.status(result.status_code)
-    response.json(result)
-})
-
-router.get("/recuperarAcesso", bodyParserJSON, async function(request, response){
-    let dados = request.body || request.query
-    let contentType = request.headers["content-type"] || "application/json"
-    let result = await controllerUsuarioADM.recuperarAcessoUsuarioADM(contentType, dados)
-    response.status(result.status_code)
-    response.json(result)
-})
-
-//validar código de recuperação
-router.post("/validarCodigo", bodyParserJSON, async function(request, response){
-    let dados = request.body
-    let result = await controllerUsuarioADM.validarCodigoAcesso(dados)
-    response.status(result.status_code)
-    response.json(result)
-})
-
-//redefinir senha utilizando o código validado
-router.post("/redefinirSenha", bodyParserJSON, async function(request, response){
-    let dados = request.body
-    let result = await controllerUsuarioADM.redefinirSenhaComCodigo(dados)
-    response.status(result.status_code)
-    response.json(result)
-})
-
-// validar login do usuário (POST e GET para compatibilidade)
-router.post("/login", bodyParserJSON, async function(request, response){
-    let login = request.body
-    let result = await controllerUsuarioADM.validarLogin(login)
-    response.status(result.status_code)
-    response.json(result)
-})
-
-router.get("/login", bodyParserJSON, async function(request, response){
-
-    //recebendo id
-    let login = request.body
-
-    //chamando função da controller e enviando o id
-    let result = await controllerUsuarioADM.validarLogin(login)
-
-    //enviando resposta
-    response.status(result.status_code)
-    response.json(result)
-})
-
-//buscar genero pelo id
+//buscar pelo id
 router.get("/:id", async function(request, response){
-
-    //recebendo id
-    let id = request.params.id
-
-    //chamando função da controller e enviando o id
-    let result = await controllerUsuarioADM.buscarUsuarioADMId(id)
-
-    //enviando resposta
-    response.status(result.status_code)
-    response.json(result)
-})
-
-//redefinir senha
-router.put("/redefinirSenha/:id", bodyParserJSON, async function(request, response){
-
-    //recebendo o id e o conteúdo para serem enviados
-    let id = request.params.id
-    let dados = request.body
-    let contentType = request.headers['content-type']
-
-    //enviando os dados para controller
-    let result = await controllerUsuarioADM.redefinirSenhaUsuarioADM(id, contentType, dados)
-
-    //enviando para o usuário
-    response.status(result.status_code)
-    response.json(result)
+    responder(response, await controllerUsuarioADM.buscarUsuarioADMId(request.params.id))
 })
 
 //atualizar dado
-router.put("/:id", verifyJWT, bodyParserJSON, async function(request, response){
-
-    //recebendo o id e o conteúdo para serem enviados
-    let id = request.params.id
-    let dados = request.body
-    let contentType = request.headers['content-type']
-
-    //enviando os dados para controller
-    let result = await controllerUsuarioADM.atualizarUsuarioADM(id, contentType, dados)
-
-    //enviando para o usuário
-    response.status(result.status_code)
-    response.json(result)
+router.put("/:id", bodyParserJSON, async function(request, response){
+    let contentType = request.headers["content-type"]
+    responder(response, await controllerUsuarioADM.atualizarUsuarioADM(request.params.id, contentType, request.body))
 })
 
-//deletar dado
-router.delete("/:id", verifyJWT, async function(request, response){
+//deletar dado (não permite que o administrador exclua a si mesmo)
+router.delete("/:id", async function(request, response){
 
-    //recebendo o id
-    let id = request.params.id
+    if(Number(request.params.id) === Number(request.adminId)){
+        return response.status(400).json({
+            status: false,
+            status_code: 400,
+            message: "Você não pode excluir o seu próprio acesso."
+        })
+    }
 
-    //enviando id para realizar o delete
-    let result = await controllerUsuarioADM.excluirUsuarioADM(id)
-
-    //devolvendo mensagem e status-code
-    response.status(result.status_code)
-    response.json(result)
+    responder(response, await controllerUsuarioADM.excluirUsuarioADM(request.params.id))
 })
 
 //exportando o router para ser utilizado no arquivo principal da API

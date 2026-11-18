@@ -1,198 +1,240 @@
-/********************************************************************************************************************************************************************************************
- * Objetivo: API centralizada para a gestão administrativa, controle de dados e governança da plataforma VibeEco.
- * Data: 02/10/2026
- * Autor: Lucas Kolle
- * Versão: 1.0.10.26
- *******************************************************************************************************************************************************************************************/
 
-/* IMPORTAÇÃO DAS DEPENDÊNCIAS */
-const express       = require("express")
-const cors          = require("cors")
-const bodyParser    = require("body-parser")
+// Carregando as variáveis de ambiente
+require("dotenv").config()
 
-// Sessão de manipulação e criação de instacias para upload de imagem 
-const multer        = require("multer") // multer é uma biblioteca que permite o upload de arquivos para a API, como imagens, vídeos, áudios, etc.
+// Importação das dependências
+const express = require("express")
+const cors = require("cors")
+const bodyParser = require("body-parser")
+const multer = require("multer")
 
-const storage       = multer.diskStorage({ //criando um objeto para manipular o multer
-    destination: function(req, file, cb){ //definindo o destino do arquivo
-        cb(null, "uploads") //definindo o destino do arquivo
+// Configuração do armazenamento de arquivos
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads")
     }
 })
 
-const upload = multer() // criando um objeto para manipular o multer
+// Instância do Multer
+const upload = multer({ storage: storage })
 
-// Carregando variáveis de ambiente
-require("dotenv").config();
-
-//criando um objeto para manipular dados do body da API em formato Json
+// Manipulador de dados JSON
 const bodyParserJSON = bodyParser.json()
 
-//criando um objeto para manipular o express
+// Criando a aplicação Express
 const app = express()
 
+// Configurações do CORS
 const corsOption = {
-    origin: "*",                                      // era ["*"]: com array, o "*" é tratado como texto e não libera nada
-    methods: "GET, POST, PUT, DELETE, OPTIONS",       // era OPTION
-    allowedHeaders: ["Content-Type", "Authorization", "x-access-token"] // libera cabeçalhos para requisições e tokens
+    origin: "*",
+    methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "x-access-token"
+    ]
 }
 
-//configurando as permissões da API atravez do CORS
+// Configurando as permissões da API
 app.use(cors(corsOption))
 
+// Configurando o recebimento de JSON
+app.use(bodyParserJSON)
 
-/* SESSÃO DE LEVEL_USUARIO */
+// Proteção da API com JWT
+const { protegerApi } = require("./middleware/middlewareJWT.js")
 
-//importando o arquivo onde estão as rotas da tabela
+// Todas as rotas administrativas exigem token,
+// exceto login e recuperação de acesso.
+app.use("/v1/vibeEco/administrador", protegerApi)
+
+
+// ==========================================
+// SESSÃO DE LEVEL_USUARIO
+// ==========================================
+
 const level_usuarioRouter = require("./routes/level_usuario.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/levelUser", cors(), level_usuarioRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/levelUser",
+    level_usuarioRouter
+)
 
 
+// ==========================================
+// SESSÃO DE ESCOLARIDADE
+// ==========================================
 
-/* SESSÃO DE ESCOLARIDADE */
-
-//importando o arquivo onde estão as rotas da tabela
 const escolaridadeRouter = require("./routes/escolaridade.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/escolaridade", cors(), escolaridadeRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/escolaridade",
+    escolaridadeRouter
+)
 
 
+// ==========================================
+// SESSÃO DE CATEGORIA
+// ==========================================
 
-/* SESSÃO DE CATEGORIA */
-
-//importando o arquivo onde estão as rotas da tabela
 const categoriaRouter = require("./routes/categoria.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/categoria", cors(), categoriaRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/categoria",
+    categoriaRouter
+)
 
 
+// ==========================================
+// SESSÃO DE INSTITUIÇÃO
+// ==========================================
 
-/* SESSÃO DE INSTITUICAO */
-
-//importando o arquivo onde estão as rotas da tabela
 const instituicaoRouter = require("./routes/instituicao.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/instituicao", cors(), instituicaoRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/instituicao",
+    instituicaoRouter
+)
 
 
+// ==========================================
+// SESSÃO DE PREMIAÇÃO
+// ==========================================
 
-/* SESSÃO DE PREMIACAO */
-
-//importando o arquivo onde estão as rotas da tabela
 const premiacaoRouter = require("./routes/premiacao.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/premiacao", cors(), premiacaoRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/premiacao",
+    premiacaoRouter
+)
 
 
+// ==========================================
+// SESSÃO DE MISSÃO
+// ==========================================
 
-/* SESSÃO DE MISSAO */
-
-//importando o arquivo onde estão as rotas da tabela
 const missaoRouter = require("./routes/missao.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/missao", cors(), missaoRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/missao",
+    missaoRouter
+)
 
 
+// ==========================================
+// SESSÃO DE DESAFIO
+// ==========================================
 
-/* SESSÃO DE DESAFIO */
-
-//importando o arquivo onde estão as rotas da tabela
 const desafioRouter = require("./routes/desafio.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/desafio", cors(), desafioRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/desafio",
+    desafioRouter
+)
 
 
+// ==========================================
+// SESSÃO DE USUÁRIO
+// ==========================================
 
-/* SESSÃO DE USUARIO */
-
-//importando o arquivo onde estão as rotas da tabela
 const usuarioRouter = require("./routes/usuario.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/usuario", cors(), usuarioRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/usuario",
+    usuarioRouter
+)
 
 
+// ==========================================
+// SESSÃO DE CONQUISTA
+// ==========================================
 
-/* SESSÃO DE CONQUISTA */
-
-//importando o arquivo onde estão as rotas da tabela
 const conquistaRouter = require("./routes/conquista.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/conquista", cors(), conquistaRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/conquista",
+    conquistaRouter
+)
 
 
+// ==========================================
+// SESSÃO DE ANEXO
+// ==========================================
 
-/* SESSÃO DE ANEXO */
-
-//importando o arquivo onde estão as rotas da tabela
 const anexoRouter = require("./routes/anexo.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/anexo", cors(), anexoRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/anexo",
+    anexoRouter
+)
 
 
+// ==========================================
+// SESSÃO DE OFENSIVA
+// ==========================================
 
-/* SESSÃO DE OFENSIVA */
-
-//importando o arquivo onde estão as rotas da tabela
 const ofensivaRouter = require("./routes/ofensiva.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/ofensiva", cors(), ofensivaRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/ofensiva",
+    ofensivaRouter
+)
 
 
+// ==========================================
+// SESSÃO DE CONTEÚDO EDUCATIVO
+// ==========================================
 
-/* SESSÃO DE CONTEUDO_EDUCATIVO */
-
-//importando o arquivo onde estão as rotas da tabela
 const conteudoEducativoRouter = require("./routes/conteudo_educativo.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/conteudoEducativo", cors(), conteudoEducativoRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/conteudoEducativo",
+    conteudoEducativoRouter
+)
 
 
+// ==========================================
+// SESSÃO DE RECOMPENSA
+// ==========================================
 
-/* SESSÃO DE RECOMPENSA */
-
-//importando o arquivo onde estão as rotas da tabela
 const recompensaRouter = require("./routes/recompensa.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/recompensa", cors(), recompensaRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/recompensa",
+    recompensaRouter
+)
 
 
+// ==========================================
+// SESSÃO DE USUÁRIO ADMINISTRADOR
+// ==========================================
 
-/* SESSÃO DE USUARIO_ADM */
-
-//importando o arquivo onde estão as rotas da tabela
 const usuarioADMRouter = require("./routes/usuario_adm.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/usuarioADM", cors(), usuarioADMRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/usuarioADM",
+    usuarioADMRouter
+)
 
 
+// ==========================================
+// SESSÃO DE POST
+// ==========================================
 
-/* SESSÃO DE POST */
-
-//importando o arquivo onde estão as rotas da tabela
 const postRouter = require("./routes/post.routes.js")
 
-//definindo a rota para acessar as rotas do generoRouter (o cors() é para liberar o acesso a essa rota, caso contrário, o navegador bloqueia por questões de segurança)
-app.use("/v1/vibeEco/administrador/post", cors(), postRouter) //quando o usuário acessar a rota "/v1/vibeEco/administrador/levelUser" ele vai ser direcionado para o arquivo "genero.routes.js"
+app.use(
+    "/v1/vibeEco/administrador/post",
+    postRouter
+)
 
 
+// ==========================================
+// INICIALIZAÇÃO DA API
+// ==========================================
 
-//iniciando uma API para receber requisições
 const PORT = process.env.PORT || 8080
-app.listen(PORT, function(){ //decidindo a porta para saída do conteúdo
-    console.log(`API funcionando e aguardando requisições na porta ${PORT}...`) //vai mostrar no terminal que a API já está funcionando
-})
 
+app.listen(PORT, function () {
+    console.log(`API funcionando e aguardando requisições na porta ${PORT}...`)
+})
