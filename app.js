@@ -1,4 +1,3 @@
-
 // Carregando as variáveis de ambiente
 require("dotenv").config()
 
@@ -120,7 +119,7 @@ app.use(
     missaoRouter
 )
 
-
+const dificuldadeRoutes = require("./routes/dificuldade.routes.js") 
 // ==========================================
 // SESSÃO DE DESAFIO
 // ==========================================
@@ -182,6 +181,18 @@ app.use(
 
 
 // ==========================================
+// SESSÃO DE DASHBOARD (Início)
+// ==========================================
+
+const dashboardRoutes = require("./routes/dashboard.routes.js")
+
+app.use(
+    "/v1/vibeEco/administrador/dashboard",
+    dashboardRoutes
+)
+
+
+// ==========================================
 // SESSÃO DE CONTEÚDO EDUCATIVO
 // ==========================================
 
@@ -217,6 +228,10 @@ app.use(
 )
 
 
+const progressoRoutes = require("./routes/progresso.routes.js")
+app.use("/v1/vibeEco/administrador/progresso", progressoRoutes)
+
+app.use("/v1/vibeEco/administrador/dificuldade", dificuldadeRoutes) 
 // ==========================================
 // SESSÃO DE POST
 // ==========================================

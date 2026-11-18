@@ -103,25 +103,28 @@ const selectAllMissao = async function(){
 
     try {
         
-        //criando variável sql
         let sql = `select 	tbl_missao.id, tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, tbl_missao.data_inicio, tbl_missao.data_termino, tbl_missao.dica,
-		                    tbl_dificuldade.nome as dificuldade
+		                    tbl_dificuldade.nome as dificuldade,
+		                    tbl_categoria.id as id_categoria,
+		                    tbl_categoria.nome as categoria
 			                    from tbl_missao
 				                    inner join tbl_dificuldade 
 					                    on tbl_missao.id_dificuldade = tbl_dificuldade.id
-	                    order by id desc;`
+				                    left join (select id_missao, min(id_categoria) as id_categoria from tbl_missao_categoria group by id_missao) as mc
+					                    on mc.id_missao = tbl_missao.id
+				                    left join tbl_categoria
+					                    on tbl_categoria.id = mc.id_categoria
+	                    order by tbl_missao.id desc;`
 
-        //enviando para o banco de dados
         let result = await knexConex.raw(sql)
 
-        //Verificando se é um array
         if(Array.isArray(result)){
-
             return result[0]
         }else{
             return false
         }
     } catch (error) {
+        console.log(error)
         return false
     }
 }
@@ -132,10 +135,16 @@ const selectByIdMissao = async function(id){
     try {
         
         let sql = `select 	tbl_missao.id, tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, tbl_missao.data_inicio, tbl_missao.data_termino, tbl_missao.dica,
-		                    tbl_dificuldade.nome as dificuldade
+		                    tbl_dificuldade.nome as dificuldade,
+		                    tbl_categoria.id as id_categoria,
+		                    tbl_categoria.nome as categoria
 			                    from tbl_missao
 				                    inner join tbl_dificuldade 
 					                    on tbl_missao.id_dificuldade = tbl_dificuldade.id
+				                    left join (select id_missao, min(id_categoria) as id_categoria from tbl_missao_categoria group by id_missao) as mc
+					                    on mc.id_missao = tbl_missao.id
+				                    left join tbl_categoria
+					                    on tbl_categoria.id = mc.id_categoria
 	                    where tbl_missao.id = ${id};`
 
         let result = await knexConex.raw(sql)
@@ -146,6 +155,7 @@ const selectByIdMissao = async function(id){
             return false
         }
     } catch (error) {
+        console.log(error)
         return false
     }
 }

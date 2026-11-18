@@ -2,7 +2,7 @@
  * Objetivo: Arquivo responsável pela validação, tratamento e manipulação de dados para o CRUD de categoria.
  * Data: 07/10/2026
  * Autor: Lucas Dias Brnadão Kolle
- * Versão: 1.0.10.26
+ * Versão: 1.0.11.26
  *******************************************************************************************************************************************************************************************/
 
 //importando arquivo de mensagens
@@ -10,8 +10,6 @@ const config_message = require("../modulo/configMessages.js")
 
 //importando arquivo do DAO (MODEL)
 const categoriaDAO = require("../../model/DAO/categoria/categoria.js")
-const { json } = require("body-parser")
-const express = require("express")
 
 /* FUNÇÕES PARA O CRUD */
 
@@ -37,12 +35,12 @@ const inserirNovaCategoria = async function(contentType, categoria){
 
                     categoria.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
-                    message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status //cria um atributo de status no cabeçalho "DEFAULT_MESSAGE" e atribui um valor predefinido no "SUCESS_CHEATED_ITEM"
+                    message.DEFAULT_MESSAGE.status = message.SUCESS_CREATED_ITEM.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_CREATED_ITEM.status_code
                     message.DEFAULT_MESSAGE.message = message.SUCESS_CREATED_ITEM.message
-                    message.DEFAULT_MESSAGE.response = categoria //aparece os dados do ator do response para o usuário conferir
+                    message.DEFAULT_MESSAGE.response = categoria
 
-                    return message.DEFAULT_MESSAGE //200 (retorna o cabeçalho com a mensagem de sucesso e os dados)
+                    return message.DEFAULT_MESSAGE //201
                 }else{
                     return message.ERROR_INTERNAL_SERVER_MODEL
                 }
@@ -51,12 +49,12 @@ const inserirNovaCategoria = async function(contentType, categoria){
             }
 
         }else{
-            return message.ERROR_CONTENT_TYPE //415 (retorna erro de tipo de dados) 
+            return message.ERROR_CONTENT_TYPE //415
         }
         
     } catch (error) {
         console.log(error)
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500 (controller)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
     }
 
 }
@@ -91,7 +89,7 @@ const atualizarCategoria = async function(id, contentType, categoria){
                         message.DEFAULT_MESSAGE.status = message.SUCCESS_UPDATE_ITEM.status
                         message.DEFAULT_MESSAGE.status_code = message.SUCCESS_UPDATE_ITEM.status_code
                         message.DEFAULT_MESSAGE.message = message.SUCCESS_UPDATE_ITEM.message
-                        message.DEFAULT_MESSAGE.response = categoria //envia os dados no response, para o usuário visualizar
+                        message.DEFAULT_MESSAGE.response = categoria
 
                         return message.DEFAULT_MESSAGE //200
                     }else{
@@ -99,18 +97,19 @@ const atualizarCategoria = async function(id, contentType, categoria){
                     }
     
                 }else{
-                    return validarDados //mensagem de erro da própria função
+                    return validarDados //400
                 }
             }else{
-                return message.ERROR_CONTENT_TYPE
+                return message.ERROR_CONTENT_TYPE //415
             }
 
         }else{
-            return validarId //mensagem de erro da própria função
+            return validarId //400, 404 ou 500
         }
         
     } catch (error) {
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
     }
 
 }
@@ -128,22 +127,22 @@ const listarCategoria = async function(){
 
             if(result.length > 0){
 
-                //personalizando o cabeçalho com a mensagem de sucesso
                 message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                 message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                 message.DEFAULT_MESSAGE.response.count = result.length
                 message.DEFAULT_MESSAGE.response.categoria = result
 
-                return message.DEFAULT_MESSAGE //retorna o cabeçalho com o "result" que contém os dados
+                return message.DEFAULT_MESSAGE //200
 
             }else{
                 return message.ERROR_NOT_FOUND //404
             }
         }else{
-            return message.ERROR_INTERNAL_SERVER_MODEL
+            return message.ERROR_INTERNAL_SERVER_MODEL //500
         }
     } catch (error) {
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
     }
 }
 
@@ -154,40 +153,34 @@ const buscarCategoriaId = async function(id){
 
     try {
 
-        //tratando id
-        //tratando o id, para não mandar conteúdos errados pro banco
         if(id == undefined || id == "" || id == null || isNaN(id)){
             message.ERROR_BAD_REQUEST.field = "[ID] INVÁLIDO"
             return message.ERROR_BAD_REQUEST //400
         
-        //se o id estiver no formato correto ele ennvia pro DAO
         }else{
             
-            //enviando para o banco
             let result = await categoriaDAO.selectByIdCategoria(id)
 
-            //tratando retorno
             if(result){
 
-                //verificando tamanho do array de resposta
                 if(result.length > 0){
 
-                    //editando cabeçalho
                     message.DEFAULT_MESSAGE.status = message.SUCESS_RESPONSE.status
                     message.DEFAULT_MESSAGE.status_code = message.SUCESS_RESPONSE.status_code
                     message.DEFAULT_MESSAGE.response.categoria = result
 
                     return message.DEFAULT_MESSAGE //200                 
                 }else{
-                    return message.ERROR_NOT_FOUND
+                    return message.ERROR_NOT_FOUND //404
                 }
             }else{
-                return message.ERROR_INTERNAL_SERVER_MODEL
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
             }
         }
         
     } catch (error) {
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
     }
 }
 
@@ -203,21 +196,31 @@ const excluirCategoria = async function(id){
 
         if(validarId.status){
 
-            //mandadno para o banco
+            //mandando para o banco
             let result = await categoriaDAO.deleteCategoria(id)
 
-            if(result){
-
-                return message.SUCCESS_DELETED_ITEM //200 registro excluido
-            }else{
-                return message.ERROR_INTERNAL_SERVER_MODEL
+            // Verifica se o DAO bloqueou por estar em uso (Foreign Key)
+            if(result === 'EM_USO'){
+                return {
+                    status: false,
+                    status_code: 409,
+                    message: "Não é possível excluir: esta categoria está vinculada a uma ou mais missões, desafios ou conteúdos."
+                }
             }
+
+            if(result){
+                return message.SUCCESS_DELETED_ITEM //200
+            }else{
+                return message.ERROR_INTERNAL_SERVER_MODEL //500
+            }
+
         }else{
-            return message.ERROR_BAD_REQUEST
+            return validarId //400, 404 ou 500
         }
 
     } catch (error) {
-        return message.ERROR_INTERNAL_SERVER_CONTROLLER
+        console.log(error)
+        return message.ERROR_INTERNAL_SERVER_CONTROLLER //500
     }
 
 }
@@ -227,16 +230,14 @@ const validarDadosCategoria = async function(dados){
 
     let message = JSON.parse(JSON.stringify(config_message))
 
-        // se o "dados.nome" (conteúdo do Json) vier vazio ou "null" ou undefined ou com mais caracteres do que é permitido (.lenght -> conta a quantidade de caracteres)
-        if(dados.nome == undefined || dados.nome == "" || dados.nome == null || dados.nome.length > 50){
+    if(dados.nome == undefined || dados.nome == "" || dados.nome == null || dados.nome.length > 50){
 
-            //Criando um novo atributo no Json de mensagem para personalizar conforme o erro (NESSE CASO O ERRO É 400)
-            message.ERROR_BAD_REQUEST.field = "[NOME] INVALIDO"
-            return message.ERROR_BAD_REQUEST
-    
-        }else{
-            return false
-        }
+        message.ERROR_BAD_REQUEST.field = "[NOME] INVALIDO"
+        return message.ERROR_BAD_REQUEST
+
+    }else{
+        return false
+    }
     
 }
 
