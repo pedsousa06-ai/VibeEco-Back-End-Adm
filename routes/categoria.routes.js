@@ -17,7 +17,7 @@ const verifyJWT = async function(request, response, next){
     
     const jwt = require("../middleware/middlewareJWT.js") //importando o middleware para validar o token
     
-    let token = request.headers["x-access-token"] //recebendo o token do cabeçalho da requisição
+    let token = request.headers["x-access-token"] || request.headers["authorization"] //recebendo o token do cabeçalho da requisição
 
     const autencidadeToken = await jwt.validarJWT(token) //validando o token
 

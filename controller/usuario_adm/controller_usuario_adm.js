@@ -433,6 +433,20 @@ const alterarMinhaSenha = async function(adminId, dados){
         message.DEFAULT_MESSAGE.response = {}
         return message.DEFAULT_MESSAGE
 
+        const adm = await usuarioADMDAO.validarCodigoRecuperacao(email, codigo)
+        if(adm){
+            message.DEFAULT_MESSAGE.status = true
+            message.DEFAULT_MESSAGE.status_code = 200
+            message.DEFAULT_MESSAGE.message = "Código validado com sucesso!"
+            message.DEFAULT_MESSAGE.response = { email: adm.email, id: adm.id }
+            return message.DEFAULT_MESSAGE
+        } else {
+            return {
+                status: false,
+                status_code: 400,
+                message: "Código de verificação incorreto ou expirado. Solicite um novo código."
+            }
+        }
     } catch (error) {
         console.log(error)
         return message.ERROR_INTERNAL_SERVER_CONTROLLER

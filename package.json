@@ -1,4 +1,11 @@
 {
+  "name": "vibeeco-back-end-adm",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
   "dependencies": {
     "body-parser": "^2.4.0",
     "cors": "^2.8.6",
