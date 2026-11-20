@@ -272,10 +272,68 @@ const deleteConteudoEducativo = async function(id){
     }
 }
 
+// Retornar todos os conteúdos com categorias e status de conclusão do usuário
+const selectAllConteudoEducativoUsuario = async function(idUsuario) {
+    try {
+        let sql = `
+            SELECT
+                ce.id,
+                ce.nome,
+                ce.descricao,
+                ce.img,
+                ce.duracao_leitura,
+                ce.qtde_xp,
+
+                COALESCE(
+                    (
+                        SELECT GROUP_CONCAT(c.nome SEPARATOR ', ')
+                        FROM tbl_conteudo_educativo_categoria cec
+                        INNER JOIN tbl_categoria c
+                            ON c.id = cec.id_categoria
+                        WHERE cec.id_conteudo_educativo = ce.id
+                    ),
+                    'Sem categoria'
+                ) AS categoria,
+
+                COALESCE(
+                    (
+                        SELECT uce.concluido
+                        FROM tbl_usuario_conteudo_educativo uce
+                        WHERE uce.id_conteudo_educativo = ce.id
+                          AND uce.id_usuario = ?
+                        LIMIT 1
+                    ),
+                    0
+                ) AS concluido
+
+            FROM tbl_conteudo_educativo ce
+            ORDER BY ce.id DESC;
+        `
+
+        let result = await knexConex.raw(sql, [idUsuario])
+
+        if (Array.isArray(result)) {
+            return result[0]
+        }
+
+        return false
+
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+
 /* EXPORTANDO FUNÇÕES */
 module.exports = {
     insertConteudoEducativo,
     updateConteudoEducativo,
+    selectAllConteudoEducativo,
+    selectByIdConteudoEducativo,
+    selectCategoriasConteudo,
+    selectAnexosConteudo,
+    deleteConteudoEducativo,
+    selectAllConteudoEducativoUsuario,
     selectAllConteudoEducativo,
     selectByIdConteudoEducativo,
     selectCategoriasConteudo,
