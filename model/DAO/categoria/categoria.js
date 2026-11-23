@@ -14,9 +14,9 @@ const insertCategoria = async function(categoria){
     try {
         let sql = `
             insert into tbl_categoria (nome)
-            values("${categoria.nome}");
+            values(?);
         `
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [categoria.nome])
         
         if(result){
             return result[0].insertId
@@ -34,10 +34,10 @@ const updateCategoria = async function(categoria){
     try {
         let sql = `
             update tbl_categoria set 
-                nome = "${categoria.nome}"
-            where id = ${categoria.id};
+                nome = ?
+            where id = ?;
         `
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [categoria.nome, categoria.id])
         return result ? true : false
     } catch (error) {
         console.log(error)

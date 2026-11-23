@@ -15,6 +15,28 @@ const missaoDAO = require("../../model/DAO/missao/missao.js")
 const controllerMissaoCategoria = require("./controller_missao_categoria.js")
 const controllerMissaoEtapa = require("./controller_missao_etapa.js")
 
+/* FUNÇÕES AUXILIARES */
+
+//o painel manda "id_categoria" (um número) e "etapas"; o CRUD usa "categoria" ([{id}]) e "etapa" ([{titulo, xp, ordem}]).
+//Aceita os dois formatos e deixa sempre arrays prontos, com a ordem das etapas numerada de 1 em diante.
+const prepararMissao = function(missao){
+
+    if(!Array.isArray(missao.categoria)){
+        let idCategoria = missao.id_categoria
+        missao.categoria = (idCategoria === undefined || idCategoria === null || idCategoria === "") ? [] : [{ id: Number(idCategoria) }]
+    }
+
+    let etapas = Array.isArray(missao.etapa) ? missao.etapa : (Array.isArray(missao.etapas) ? missao.etapas : [])
+    missao.etapa = etapas.map((e, i) => ({
+        titulo: String(e.titulo ?? "").trim(),
+        xp: Number(e.xp),
+        ordem: i + 1
+    }))
+    delete missao.etapas
+
+    missao.dica = (missao.dica === undefined || missao.dica === null) ? "" : String(missao.dica)
+}
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -32,6 +54,8 @@ const inserirNovaMissao = async function(contentType, missao){
 
             if(!validando){
 
+                prepararMissao(missao)
+
                 //mandando pro banco
                 let result = await missaoDAO.insertMissao(missao)
 
@@ -40,11 +64,11 @@ const inserirNovaMissao = async function(contentType, missao){
                     missao.id = result //criando o atributo ID no Json e colocando o ID gerado no momento do insert
 
 
-                    if (missao.categoria != undefined || missao.categoria != null || missao.categoria != ""){
+                    {
 
 
                         //Manipulação de dados para inserir na tabela intermediaria
-                        for(categoria of missao.categoria){ //estrutura para percorrer o array recebido na requisição no json
+                        for(const categoria of missao.categoria){ //estrutura para percorrer o array recebido na requisição no json
                         
                             //cria um json com os ids, para mandar os dois juntos
                             let missaoCategoria = {
@@ -67,11 +91,11 @@ const inserirNovaMissao = async function(contentType, missao){
 
 
 
-                    if (missao.etapa != undefined || missao.etapa != null || missao.etapa != ""){
+                    {
 
 
                         //Manipulação de dados para inserir na tabela intermediaria
-                        for(etapa of missao.etapa){ //estrutura para percorrer o array recebido na requisição no json
+                        for(const etapa of missao.etapa){ //estrutura para percorrer o array recebido na requisição no json
                         
                             //cria um json com os ids, para mandar os dois juntos
                             let missaoEtapa = {
@@ -139,6 +163,8 @@ const atualizarMissao = async function(id, contentType, missao){
 
                 if(!validarDados){
 
+                    prepararMissao(missao)
+
                     //se estiver tudo certo ele adiciona o id no objeto
                     missao.id = Number(id)
 
@@ -149,7 +175,7 @@ const atualizarMissao = async function(id, contentType, missao){
 
 
 
-                        if(missao.categoria != undefined || missao.categoria != null || missao.categoria != ""){
+                        {
                             //Manipulação de dados na tabela de relação (tabela intermediária)
                             let resultDeleteMissaoCategoria = await controllerMissaoCategoria.excluirCategoriaIdMissao(missao.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
 
@@ -158,7 +184,7 @@ const atualizarMissao = async function(id, contentType, missao){
 
 
                                 //Manipulação de dados para inserir os Generos do Filme
-                                for(categoria of missao.categoria){ //estrutura para percorrer o array recebido na requisição no json 
+                                for(const categoria of missao.categoria){ //estrutura para percorrer o array recebido na requisição no json 
                                     
                                     //cria um json com os ids, para mandar os dois juntos
                                     let missaoCategoria = {
@@ -179,7 +205,7 @@ const atualizarMissao = async function(id, contentType, missao){
 
 
 
-                        if(missao.etapa != undefined || missao.etapa != null || missao.etapa != ""){
+                        {
 
                             //Manipulação de dados na tabela de relação (tabela intermediária)
                             let resultDeleteMissaoEtapa = await controllerMissaoEtapa.excluirEtapaIdMissao(missao.id) //exclui os dados relacionados , para depois inserir os novos dados relacionados a ele
@@ -189,7 +215,7 @@ const atualizarMissao = async function(id, contentType, missao){
 
 
                                 //Manipulação de dados para inserir os Generos do Filme
-                                for(etapa of missao.etapa){ //estrutura para percorrer o array recebido na requisição no json 
+                                for(const etapa of missao.etapa){ //estrutura para percorrer o array recebido na requisição no json 
                                     
                                     //cria um json com os ids, para mandar os dois juntos
                                     let missaoEtapa = {
@@ -256,7 +282,7 @@ const listarMissao = async function(){
 
 
                 //percorrendo o array
-                for(missao of result){
+                for(const missao of result){
 
                     //cria o objeto relacionados 
                     let resultMissaoCategoria = await controllerMissaoCategoria.buscarCategoriasPorIdMissao(missao.id) //enviando o id  para a função que busca os dados relacionados a ele
@@ -320,7 +346,7 @@ const buscarMissaoId = async function(id){
                 if(result.length > 0){
 
 
-                    for(missao of result){
+                    for(const missao of result){
 
                         //cria o objeto relacionado 
                         let resultMissaoCategoria = await controllerMissaoCategoria.buscarCategoriasPorIdMissao(id) //enviando o id  para a função que busca os dados relacionados a ele

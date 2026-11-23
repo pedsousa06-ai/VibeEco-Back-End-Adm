@@ -149,6 +149,12 @@ const anexarRelacionados = async function(lista, idConteudo = null){
     return true
 }
 
+//converte o XP recebido (texto do multipart) em número; sem valor válido devolve o padrão
+const lerXp = function(valor, padrao){
+    if(valor === undefined || valor === null || valor === "" || isNaN(valor) || Number(valor) < 0) return padrao
+    return Math.round(Number(valor))
+}
+
 /* FUNÇÕES PARA O CRUD */
 
 //função para inserir um novo dado
@@ -179,10 +185,8 @@ const inserirNovaConteudoEducativo = async function(contentType, dados, arquivos
             img: envio.img,
             categoria: categorias,
             anexos: envio.anexos,
-            qtde_xp: dados.qtde_xp
+            qtde_xp: lerXp(dados.qtde_xp, 30) // o painel não envia: usa 30 XP por padrão
         }
-
-        console.log(conteudoEducativo)
 
         //mandando pro banco (conteúdo + categorias + anexos, tudo ou nada)
         let result = await conteudoEducativoDAO.insertConteudoEducativo(conteudoEducativo)
@@ -261,6 +265,7 @@ const atualizarConteudoEducativo = async function(id, contentType, dados, arquiv
             duracao_leitura: Number(dados.duracao_leitura),
             img: img,
             categoria: categorias,
+            qtde_xp: lerXp(dados.qtde_xp, null), // null = mantém o XP que já está no banco
             anexos: envio.anexos,        //anexos novos
             anexos_remover: idsRemover   //anexos que o usuário tirou
         }

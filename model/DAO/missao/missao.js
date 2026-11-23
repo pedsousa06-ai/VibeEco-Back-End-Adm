@@ -21,43 +21,30 @@ const insertMissao = async function(missao){
 
     try {
 
-        //criando variável sql
-        let sql = 
-            `
-                insert into tbl_missao (
-                    nome,
-                    descricao,
-                    coins,
-                    total_xp_missao,
-                    data_inicio,
-                    data_termino,
-                    dica,
-                    id_dificuldade
+        //valores em "?" (e não dentro do texto do SQL): aspas e apóstrofos no texto não quebram o comando
+        let sql =
+            `insert into tbl_missao (nome, descricao, coins, total_xp_missao, data_inicio, data_termino, dica, id_dificuldade)
+             values (?, ?, ?, ?, ?, ?, ?, ?);`
 
-                )
-                values(
-                    "${missao.nome}",
-                    "${missao.descricao}",
-                    ${missao.coins},
-                    ${missao.total_xp_missao},
-                    "${missao.data_inicio}",
-                    "${missao.data_termino}",
-                    "${missao.dica}",
-                    ${missao.id_dificuldade}
-                );
-            `
+        let result = await knexConex.raw(sql, [
+            missao.nome,
+            missao.descricao,
+            Number(missao.coins),
+            Number(missao.total_xp_missao ?? 0),
+            missao.data_inicio,
+            missao.data_termino,
+            missao.dica ?? "",
+            Number(missao.id_dificuldade)
+        ])
 
-        //executando no banco de dados
-        let result = await knexConex.raw(sql) //usa a coneção com banco para executar a variável sql
-
-        //validadndo retorno do banco
         if(result){
             return result[0].insertId //pega o id do item adicionado para retornar, ao invés de retornar só o "true"
         }else{
             return false
         }
-        
+
     } catch (error) {
+        console.log(error)
         return false
     }
 
@@ -68,31 +55,38 @@ const updateMissao = async function(missao){
 
     try {
 
-        //criando variável sql
-        let sql = 
-        `
-            update tbl_missao set 
-                nome 			    = "${missao.nome}",
-                descricao 		    = "${missao.descricao}",
-                coins 			    = ${missao.coins},
-                total_xp_missao     = ${missao.total_xp_missao},
-                data_inicio 		= "${missao.data_inicio}",
-                data_termino 		= "${missao.data_termino}",
-                dica 				= "${missao.dica}",
-                id_dificuldade 		= ${missao.id_dificuldade}
-            where id = ${missao.id};
-        `
+        let sql =
+            `update tbl_missao set
+                nome            = ?,
+                descricao       = ?,
+                coins           = ?,
+                total_xp_missao = ?,
+                data_inicio     = ?,
+                data_termino    = ?,
+                dica            = ?,
+                id_dificuldade  = ?
+            where id = ?;`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [
+            missao.nome,
+            missao.descricao,
+            Number(missao.coins),
+            Number(missao.total_xp_missao ?? 0),
+            missao.data_inicio,
+            missao.data_termino,
+            missao.dica ?? "",
+            Number(missao.id_dificuldade),
+            Number(missao.id)
+        ])
 
-        //validando retorno
         if(result){
             return true
         }else{
             return false
         }
-        
+
     } catch (error) {
+        console.log(error)
         return false
     }
 
@@ -103,7 +97,7 @@ const selectAllMissao = async function(){
 
     try {
         
-        let sql = `select 	tbl_missao.id, tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, tbl_missao.data_inicio, tbl_missao.data_termino, tbl_missao.dica,
+        let sql = `select 	tbl_missao.id, tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, date_format(tbl_missao.data_inicio, '%Y-%m-%d') as data_inicio, date_format(tbl_missao.data_termino, '%Y-%m-%d') as data_termino, tbl_missao.dica,
 		                    tbl_dificuldade.nome as dificuldade,
 		                    tbl_categoria.id as id_categoria,
 		                    tbl_categoria.nome as categoria
@@ -134,7 +128,7 @@ const selectByIdMissao = async function(id){
 
     try {
         
-        let sql = `select 	tbl_missao.id, tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, tbl_missao.data_inicio, tbl_missao.data_termino, tbl_missao.dica,
+        let sql = `select 	tbl_missao.id, tbl_missao.nome, tbl_missao.descricao, tbl_missao.coins, tbl_missao.total_xp_missao, date_format(tbl_missao.data_inicio, '%Y-%m-%d') as data_inicio, date_format(tbl_missao.data_termino, '%Y-%m-%d') as data_termino, tbl_missao.dica,
 		                    tbl_dificuldade.nome as dificuldade,
 		                    tbl_categoria.id as id_categoria,
 		                    tbl_categoria.nome as categoria
@@ -145,9 +139,9 @@ const selectByIdMissao = async function(id){
 					                    on mc.id_missao = tbl_missao.id
 				                    left join tbl_categoria
 					                    on tbl_categoria.id = mc.id_categoria
-	                    where tbl_missao.id = ${id};`
+	                    where tbl_missao.id = ?;`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [id])
 
         if(Array.isArray(result)){
             return result[0]
@@ -165,9 +159,9 @@ const deleteMissao = async function(id){
 
     try {
         
-        let sql = `delete from tbl_missao where id = ${id}`
+        let sql = `delete from tbl_missao where id = ?`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [id])
 
         if(result){
             return true

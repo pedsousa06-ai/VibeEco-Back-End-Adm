@@ -258,6 +258,14 @@ const validarDadosDesafio = function(dados){
         message.ERROR_BAD_REQUEST.field = "[CATEGORIA] INVALIDA (envie um array com ao menos um {id})"
         return message.ERROR_BAD_REQUEST
 
+    }else if(dados.id_tipo_desafio !== undefined && dados.id_tipo_desafio !== null && dados.id_tipo_desafio !== "" && isNaN(dados.id_tipo_desafio)){
+        message.ERROR_BAD_REQUEST.field = "[ID_TIPO_DESAFIO] INVALIDO"
+        return message.ERROR_BAD_REQUEST
+
+    }else if(dados.meta_participantes !== undefined && dados.meta_participantes !== null && dados.meta_participantes !== "" && (isNaN(dados.meta_participantes) || Number(dados.meta_participantes) < 0)){
+        message.ERROR_BAD_REQUEST.field = "[META_PARTICIPANTES] INVALIDO"
+        return message.ERROR_BAD_REQUEST
+
     }else{
         return false
     }

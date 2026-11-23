@@ -4,8 +4,8 @@ const knexConex = knex(knexConfig.development)
 
 const insertDificuldade = async function(dificuldade){
     try {
-        let sql = `insert into tbl_dificuldade (nome) values("${dificuldade.nome}");`
-        let result = await knexConex.raw(sql)
+        let sql = `insert into tbl_dificuldade (nome) values(?);`
+        let result = await knexConex.raw(sql, [dificuldade.nome])
         return result ? result[0].insertId : false
     } catch (error) {
         console.log(error)
@@ -15,8 +15,8 @@ const insertDificuldade = async function(dificuldade){
 
 const updateDificuldade = async function(dificuldade){
     try {
-        let sql = `update tbl_dificuldade set nome = "${dificuldade.nome}" where id = ${dificuldade.id};`
-        let result = await knexConex.raw(sql)
+        let sql = `update tbl_dificuldade set nome = ? where id = ?;`
+        let result = await knexConex.raw(sql, [dificuldade.nome, dificuldade.id])
         return result ? true : false
     } catch (error) {
         console.log(error)
