@@ -28,14 +28,14 @@ const insertMissaoEtapa = async function(missaoEtapa){
                 ordem,
                 id_missao
             )
-            values (
-                "${missaoEtapa.titulo}",
-                ${missaoEtapa.xp},
-                ${missaoEtapa.ordem},
-                ${missaoEtapa.id_missao}
-            );`
+            values (?, ?, ?, ?);`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [
+            missaoEtapa.titulo,
+            Number(missaoEtapa.xp),
+            Number(missaoEtapa.ordem),
+            Number(missaoEtapa.id_missao)
+        ])
 
         if(result)
             return result[0].insertId
@@ -54,13 +54,19 @@ const updateMissaoEtapa = async function(missaoEtapa){
     try {
 
         let sql =   `update tbl_missao_etapa set
-        titulo         = "${missaoEtapa.titulo}",
-        xp             = ${missaoEtapa.xp},
-        ordem          = ${missaoEtapa.ordem},
-        id_missao      = ${missaoEtapa.id_missao}
-            where id = ${missaoEtapa.id};`
+        titulo         = ?,
+        xp             = ?,
+        ordem          = ?,
+        id_missao      = ?
+            where id = ?;`
 
-        let result = await knexConex.raw(sql)
+        let result = await knexConex.raw(sql, [
+            missaoEtapa.titulo,
+            Number(missaoEtapa.xp),
+            Number(missaoEtapa.ordem),
+            Number(missaoEtapa.id_missao),
+            Number(missaoEtapa.id)
+        ])
 
         if(result){
             return true

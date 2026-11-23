@@ -116,13 +116,15 @@ const updateConteudoEducativo = async function(conteudoEducativo){
                     nome            = ?,
                     descricao       = ?,
                     img             = ?,
-                    duracao_leitura = ?
+                    duracao_leitura = ?,
+                    qtde_xp         = coalesce(?, qtde_xp)
                 where id = ?;`,
                 [
                     conteudoEducativo.nome,
                     conteudoEducativo.descricao ?? null,
                     conteudoEducativo.img ?? "",
                     conteudoEducativo.duracao_leitura,
+                    conteudoEducativo.qtde_xp ?? null,
                     conteudoEducativo.id
                 ]
             )
@@ -150,7 +152,7 @@ const selectAllConteudoEducativo = async function(){
 
     try {
 
-        let sql = `select id, nome, descricao, img, duracao_leitura from tbl_conteudo_educativo order by id desc;`
+        let sql = `select id, nome, descricao, img, duracao_leitura, qtde_xp from tbl_conteudo_educativo order by id desc;`
 
         let result = await knexConex.raw(sql)
 
@@ -171,7 +173,7 @@ const selectByIdConteudoEducativo = async function(id){
 
     try {
 
-        let sql = `select id, nome, descricao, img, duracao_leitura from tbl_conteudo_educativo where id = ?;`
+        let sql = `select id, nome, descricao, img, duracao_leitura, qtde_xp from tbl_conteudo_educativo where id = ?;`
 
         let result = await knexConex.raw(sql, [id])
 

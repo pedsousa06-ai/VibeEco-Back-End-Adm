@@ -30,9 +30,11 @@ const insertDesafio = async function(desafio){
                 super_coins,
                 data_inicio,
                 data_termino,
-                id_dificuldade
+                id_dificuldade,
+                id_tipo_desafio,
+                meta_participantes
             )
-            values (?, ?, ?, ?, ?, ?);`
+            values (?, ?, ?, ?, ?, ?, ?, ?);`
 
         let result = await knexConex.raw(sql, [
             desafio.nome,
@@ -40,7 +42,9 @@ const insertDesafio = async function(desafio){
             desafio.super_coins,
             desafio.data_inicio,
             desafio.data_termino,
-            desafio.id_dificuldade
+            desafio.id_dificuldade,
+            desafio.id_tipo_desafio ?? 1, //1 = Individual (coluna NOT NULL)
+            desafio.meta_participantes ?? null
         ])
 
         //validando retorno do banco
@@ -69,7 +73,9 @@ const updateDesafio = async function(desafio){
                 super_coins     = ?,
                 data_inicio     = ?,
                 data_termino    = ?,
-                id_dificuldade  = ?
+                id_dificuldade  = ?,
+                id_tipo_desafio = coalesce(?, id_tipo_desafio),
+                meta_participantes = coalesce(?, meta_participantes)
             where id = ?;`
 
         let result = await knexConex.raw(sql, [
@@ -79,6 +85,8 @@ const updateDesafio = async function(desafio){
             desafio.data_inicio,
             desafio.data_termino,
             desafio.id_dificuldade,
+            desafio.id_tipo_desafio ?? null,
+            desafio.meta_participantes ?? null,
             desafio.id
         ])
 
@@ -104,10 +112,15 @@ const selectAllDesafio = async function(){
         let sql = `select	tbl_desafio.id, tbl_desafio.nome, tbl_desafio.descricao, tbl_desafio.super_coins,
                             date_format(tbl_desafio.data_inicio, '%Y-%m-%d') as data_inicio,
                             date_format(tbl_desafio.data_termino, '%Y-%m-%d') as data_termino,
-                            tbl_dificuldade.nome as dificuldade
+                            tbl_dificuldade.nome as dificuldade,
+                            tbl_desafio.id_tipo_desafio,
+                            tbl_tipo_desafio.nome as tipo,
+                            tbl_desafio.meta_participantes
                                 from tbl_desafio
                                     inner join tbl_dificuldade
                                         on tbl_desafio.id_dificuldade = tbl_dificuldade.id
+                                    left join tbl_tipo_desafio
+                                        on tbl_desafio.id_tipo_desafio = tbl_tipo_desafio.id
                         order by tbl_desafio.id desc;`
 
         let result = await knexConex.raw(sql)
@@ -132,10 +145,15 @@ const selectByIdDesafio = async function(id){
         let sql = `select	tbl_desafio.id, tbl_desafio.nome, tbl_desafio.descricao, tbl_desafio.super_coins,
                             date_format(tbl_desafio.data_inicio, '%Y-%m-%d') as data_inicio,
                             date_format(tbl_desafio.data_termino, '%Y-%m-%d') as data_termino,
-                            tbl_dificuldade.nome as dificuldade
+                            tbl_dificuldade.nome as dificuldade,
+                            tbl_desafio.id_tipo_desafio,
+                            tbl_tipo_desafio.nome as tipo,
+                            tbl_desafio.meta_participantes
                                 from tbl_desafio
                                     inner join tbl_dificuldade
                                         on tbl_desafio.id_dificuldade = tbl_dificuldade.id
+                                    left join tbl_tipo_desafio
+                                        on tbl_desafio.id_tipo_desafio = tbl_tipo_desafio.id
                         where tbl_desafio.id = ?;`
 
         let result = await knexConex.raw(sql, [id])
