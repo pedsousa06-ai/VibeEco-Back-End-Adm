@@ -258,7 +258,7 @@ const validarDadosDesafio = function(dados){
         message.ERROR_BAD_REQUEST.field = "[CATEGORIA] INVALIDA (envie um array com ao menos um {id})"
         return message.ERROR_BAD_REQUEST
 
-    }else if(dados.id_tipo_desafio !== undefined && dados.id_tipo_desafio !== null && dados.id_tipo_desafio !== "" && isNaN(dados.id_tipo_desafio)){
+    }else if(dados.id_tipo_desafio == undefined || dados.id_tipo_desafio == null || dados.id_tipo_desafio == "" || isNaN(dados.id_tipo_desafio)){
         message.ERROR_BAD_REQUEST.field = "[ID_TIPO_DESAFIO] INVALIDO"
         return message.ERROR_BAD_REQUEST
 
