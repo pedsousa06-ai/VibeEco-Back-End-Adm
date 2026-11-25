@@ -49,7 +49,6 @@ const inserirNovaDesafio = async function(contentType, desafio){
 
         if(String(contentType).toUpperCase() != "APPLICATION/JSON")
             return message.ERROR_CONTENT_TYPE //415
-
         let validando = validarDadosDesafio(desafio)
         if(validando) return validando //400
 
