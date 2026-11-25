@@ -8,8 +8,13 @@ const senhaService = require("../service/senha.js")
 const db = knex(knexConfig.development)
 
 const administrador = {
+<<<<<<< HEAD
     email: "ryllerfeitosa@gmail.com",
     senha: "    "
+=======
+    email: "pedsousa06@gmail.com",
+    senha: "Vibeeco123"
+>>>>>>> 1fa61d7 (Fix: arrumando o env. e o example)
 }
 
 async function criarAdministrador() {

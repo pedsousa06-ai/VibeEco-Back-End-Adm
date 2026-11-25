@@ -3,9 +3,6 @@ node_modules/
 /node_modules
 
 # Variáveis de ambiente
-.env
-.env.*
-!.env.example
 
 # Build e logs
 dist/
