@@ -43,7 +43,7 @@ const insertDesafio = async function(desafio){
             desafio.data_inicio,
             desafio.data_termino,
             desafio.id_dificuldade,
-            desafio.id_tipo_desafio ?? 1, //1 = Individual (coluna NOT NULL)
+            desafio.id_tipo_desafio , //1 = Individual (coluna NOT NULL)
             desafio.meta_participantes ?? null
         ])
 
@@ -85,7 +85,7 @@ const updateDesafio = async function(desafio){
             desafio.data_inicio,
             desafio.data_termino,
             desafio.id_dificuldade,
-            desafio.id_tipo_desafio ?? null,
+            desafio.id_tipo_desafio ,
             desafio.meta_participantes ?? null,
             desafio.id
         ])
