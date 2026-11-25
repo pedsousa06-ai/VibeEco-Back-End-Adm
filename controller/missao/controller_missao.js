@@ -398,28 +398,6 @@ const excluirMissao = async function(id){
         let validarId = await buscarMissaoId(id)
 
         if(validarId.status){
-
-
-
-            //excluindo relacionamento 
-            let resultDeleteMissaoCategoria = await controllerMissaoCategoria.excluirCategoriaIdMissao(id) //exclui os dados relacionados a ele
-
-            if(!resultDeleteMissaoCategoria.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(categoria)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
-
-
-            //excluindo relacionamento 
-            let resultDeleteMissaoEtapa = await controllerMissaoEtapa.excluirMissaoEtapa(id) //exclui os dados relacionados a ele
-
-            if(!resultDeleteMissaoEtapa.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(etapa)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
-
-
-
             let result = await missaoDAO.deleteMissao(id)
 
             if(result){

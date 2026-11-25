@@ -8,7 +8,7 @@ const senhaService = require("../service/senha.js")
 const db = knex(knexConfig.development)
 
 const administrador = {
-    email: "pedsousa06@gmail.com",
+    email: "ryllerfeitosa@gmail.com",
     senha: "    "
 }
 
