@@ -783,59 +783,59 @@ const excluirUsuario = async function(id){
 
         if(validarId.status){
 
-            //excluindo relacionamento 
-            let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
+            // //excluindo relacionamento 
+            // let resultDeleteUsuarioDesafio = await controlerUsuarioDesafio.excluirDesafioIdUsuario(id) //exclui os dados relacionados a ele
 
-            if(!resultDeleteUsuarioDesafio.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(desafio)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
-
-
-
-            //excluindo relacionamento 
-            let resultDeleteUsuarioMissao = await controlerUsuarioMissao.excluirMissaoIdUsuario(id) //exclui os dados relacionados a ele
-
-            if(!resultDeleteUsuarioMissao.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(missão)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
+            // if(!resultDeleteUsuarioDesafio.status){
+            //     console.log("Erro ao excluir os dados relacionados a tabela intermediária(desafio)")
+            //     return message.ERROR_INTERNAL_SERVER_MODEL //500
+            // }
 
 
 
-            let resultDeleteUsuarioPremiacao = await controlerUsuarioPremiacao.excluirPremiacaofioIdUsuario(id) //exclui os dados relacionados a ele
+            // //excluindo relacionamento 
+            // let resultDeleteUsuarioMissao = await controlerUsuarioMissao.excluirMissaoIdUsuario(id) //exclui os dados relacionados a ele
 
-            if(!resultDeleteUsuarioPremiacao.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(premiação)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
-
-
-
-            let resultDeleteUsuarioConquista = await controlerUsuarioConquista.excluirConquistaIdUsuario(id) //exclui os dados relacionados a ele
-
-            if(!resultDeleteUsuarioConquista.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(conquista)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
+            // if(!resultDeleteUsuarioMissao.status){
+            //     console.log("Erro ao excluir os dados relacionados a tabela intermediária(missão)")
+            //     return message.ERROR_INTERNAL_SERVER_MODEL //500
+            // }
 
 
 
-            let resultDeleteUsuarioRecompensa = await controlerUsuarioRecompensa.excluirRecompensaIdUsuario(id) //exclui os dados relacionados a ele
+            // let resultDeleteUsuarioPremiacao = await controlerUsuarioPremiacao.excluirPremiacaofioIdUsuario(id) //exclui os dados relacionados a ele
 
-            if(!resultDeleteUsuarioRecompensa.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(recompensa)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
+            // if(!resultDeleteUsuarioPremiacao.status){
+            //     console.log("Erro ao excluir os dados relacionados a tabela intermediária(premiação)")
+            //     return message.ERROR_INTERNAL_SERVER_MODEL //500
+            // }
 
 
 
-            let resultDeleteUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.excluirConteudoEducativoIdUsuario(id) //exclui os dados relacionados a ele
+            // let resultDeleteUsuarioConquista = await controlerUsuarioConquista.excluirConquistaIdUsuario(id) //exclui os dados relacionados a ele
 
-            if(!resultDeleteUsuarioConteudoEducativo.status){
-                console.log("Erro ao excluir os dados relacionados a tabela intermediária(conteudo educativo)")
-                return message.ERROR_INTERNAL_SERVER_MODEL //500
-            }
+            // if(!resultDeleteUsuarioConquista.status){
+            //     console.log("Erro ao excluir os dados relacionados a tabela intermediária(conquista)")
+            //     return message.ERROR_INTERNAL_SERVER_MODEL //500
+            // }
+
+
+
+            // let resultDeleteUsuarioRecompensa = await controlerUsuarioRecompensa.excluirRecompensaIdUsuario(id) //exclui os dados relacionados a ele
+
+            // if(!resultDeleteUsuarioRecompensa.status){
+            //     console.log("Erro ao excluir os dados relacionados a tabela intermediária(recompensa)")
+            //     return message.ERROR_INTERNAL_SERVER_MODEL //500
+            // }
+
+
+
+            // let resultDeleteUsuarioConteudoEducativo = await controlerUsuarioConteudoEducativo.excluirConteudoEducativoIdUsuario(id) //exclui os dados relacionados a ele
+
+            // if(!resultDeleteUsuarioConteudoEducativo.status){
+            //     console.log("Erro ao excluir os dados relacionados a tabela intermediária(conteudo educativo)")
+            //     return message.ERROR_INTERNAL_SERVER_MODEL //500
+            // }
 
 
 
